@@ -45,9 +45,10 @@ class SignIn(APIView):
                 # Create session if it doesn't exist already
                 if not self.request.session.exists(self.request.session.session_key):
                     self.request.session.create()
-                    old_session = Session.objects.filter(username=username)
-                    if old_session.exists():
-                        old_session[0].delete()
+                    old_sessions = Session.objects.filter(username=username)
+                    if old_sessions.exists():
+                        for session in old_sessions:
+                            session.delete()
 
                 # Create new session (awkward way to do it)
                 print(self.request.session.session_key)

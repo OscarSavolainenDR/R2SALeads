@@ -1,0 +1,5 @@
+- Add if request.headers['Authorization'].exists():
+    to views.
+- Add corsheaders
+- Potentially update django_heroku to django_on_heroku
+- Redo Sessions, so it's done correctly (maybe Tim tut)

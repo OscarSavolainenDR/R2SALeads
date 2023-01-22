@@ -78,7 +78,7 @@ class InitDB(APIView):
                 attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
                                 # src=listing['excel_file'],
                                 src=listing['excel_file'],
-                                size='1kb',)
+                                size='1kb',) 
                 l.attachments.add(attachment)
                 l.expired_date = self.today - timedelta(days=i-2)
                 l.url = listing['url']
