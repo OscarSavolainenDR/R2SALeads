@@ -46,7 +46,7 @@ class InitDB(APIView):
         #     print(all_listings[0])
 
         # Check if database already has these, if so skip
-        city = City(name='London', country ='England', stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ')
+        city = City(name='London', country ='England', price=200, stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ')
         if not City.objects.filter(name='London').exists():
             city.save()
             city = City.objects.filter(name='London')[0]
@@ -101,7 +101,7 @@ class InitDB(APIView):
         # authorised listing_ids)
         # if not user_queryset.exists():   
         # london = City(name='London', tags=[])
-        london = City.objects.filter(name='London')[0]
+        # london = City.objects.filter(name='London')[0]
         belfast = City(name='Belfast',country='Ireland', stripe_subscription_code='price_1MTAF7JeYWzBWqCqabe0l1wi')
         if not City.objects.filter(name='Belfast').exists():
             belfast.save()
@@ -113,70 +113,21 @@ class InitDB(APIView):
         else:
             dublin = City.objects.filter(name='Dublin')[0]
 
-        tim = User(username='Tim', password='Tim', 
-                email='tim@hotmail.com',
-                )
+        
         if not User.objects.filter(username='Tim').exists():
+            tim = User(username='Tim', password='Tim', 
+                email='tim@hotmail.com')
             tim.save()
-            tim.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            tim.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            tim.profile.authorised_listings_booked=[listing_queryset[3].id]
-
-            # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(tim, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, tim, [london, belfast])
-            # tim.save()
-            # tim.cities.add(london)
-            # tim.cities.add(belfast)
-            # tim.save()
             
-
-        bob =  User(username='Bob', password='Bob',  
-                email='bob@hotmail.com',
-                # authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id], 
-                # authorised_listings_contacted=[listing_queryset[1].id],
-                # authorised_listings_booked=[listing_queryset[3].id],
-                )
         if not User.objects.filter(username='Bob').exists():
+            bob =  User(username='Bob', password='Bob',  
+                    email='bob@hotmail.com')
             bob.save()
-            bob.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            bob.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            bob.profile.authorised_listings_booked=[listing_queryset[3].id]
-            bob.save()
-            # bob.cities.set([dublin, belfast])
 
-            # # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(bob, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, bob, [dublin, belfast])
-
-            # s1 = Subscription.objects.create(user=bob.profile, city=dublin)
-            # s2 = Subscription.objects.create(user=bob.profile, city=belfast)
-            # bob.cities.add(dublin)
-            # bob.cities.add(belfast)
-            # bob.save()
- 
-        admin = User(username='admin', password='abc',
-                email = 'admin@hotmail.com',
-                )
         if not User.objects.filter(username='admin').exists():
+            admin = User(username='admin', password='abc',
+                email = 'admin@hotmail.com')
             admin.save()
-            admin.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            admin.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            admin.profile.authorised_listings_booked=[listing_queryset[3].id]
-            admin.save()
-
-            # # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(admin, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, admin, [london, belfast])
-
-            # s1_a = Subscription.objects.create(user=admin.profile, city=london)
-            # s2_a = Subscription.objects.create(user=admin.profile, city=belfast)
-            # admin.cities.add(london)
-            # admin.cities.add(belfast)
-            # admin.save()
 
         # Notifications
 
@@ -209,7 +160,7 @@ class UpdateListings(APIView):
         # Load new listings
         with open('json_data.json') as json_file:
             all_listings = json.load(json_file)
-            print(all_listings[0])
+            # print(all_listings[0])
 
         # Store in DB if new
         for i, listing in enumerate(all_listings):
@@ -247,8 +198,8 @@ class UpdateListings(APIView):
             # Runs once a day, should catch all new ones.
             # Although more robust to go through all listings
             if listing.created_at <= self.today:
-                print('Listing:', listing.url, listing.id)
-                for user in User.objects.filter():
+                # print('Listing:', listing.url, listing.id)
+                for user in User.objects.filter(): 
                     if user.profile.cities.filter(name=listing.city.name).exists():
                         print(f'Adding listings to {user.username} leads list')
                         if listing.id not in user.profile.authorised_listings_leads:

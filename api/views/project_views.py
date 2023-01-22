@@ -209,50 +209,48 @@ class DownloadExcel(APIView):
     # serializer_class = RoomSerializer
     # lookup_url_kwarg = 'code' # when we call this instance, we need to give a keyword arguement
 
-
     # Define a get request: frontend asks for stuff
     def get(self, request, format=None):
-        excel_path = 'excels/Bristol.xlsx'
-        listing_sheet = 'Listing_3'
+        key = request.headers['Authorization'].split(' ')[1]
+        key_query_set = Session.objects.filter(key=key)
 
-        # try:
-        df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
+        if key_query_set.exists():
+            username = key_query_set[0].username
 
-        # Initialize data
-        data=[0 for i in range(len(df))]
-        excel_json_str = []
-        for i in range(len(df)):    
-            data[i] = { str(df.columns.values[0]): str(df.loc[i][0]), 
-                        str(df.columns.values[1]): str(df.loc[i][1]), 
-                        str(df.columns.values[2]): str(df.loc[i][2]),
-                        str(df.columns.values[3]): str(df.loc[i][3]),
-                        str(df.columns.values[4]): str(df.loc[i][4]),
-                        str(df.columns.values[5]): str(df.loc[i][5]), 
-                        str(df.columns.values[6]): str(df.loc[i][6]), 
-                        str(df.columns.values[7]): str(df.loc[i][7]), 
-                        str(df.columns.values[8]): str(df.loc[i][8]), 
-                        str(df.columns.values[9]): str(df.loc[i][9]), 
-                        str(df.columns.values[10]): str(df.loc[i][10]), 
-                        str(df.columns.values[11]): str(df.loc[i][11]), 
-                        str(df.columns.values[12]): str(df.loc[i][12]), 
-                        # str(df.columns.values[13]): str(df.loc[i][13]), 
-                        # str(df.columns.values[14]): str(df.loc[i][14]), 
-                        # str(df.columns.values[15]): str(df.loc[i][15]), 
-                        # str(df.columns.values[16]): str(df.loc[i][16]), 
-                        }
-            excel_json_str.append(data[i])
-        # excel_json_str = [json.dumps(line)+",\n" for line in data]
-        # excel_json_str[-1] =   excel_json_str[-1][:-2] # remove ",\n" from last line
-        # with open('Savedwork.json', 'w') as json_file:
-        #     json_file.writelines(excel_json_str)
+            # Load user's details from DB
+            queryset = User.objects.filter(username=username)
+            if queryset.exists():
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
 
+            print(request)
 
-        # breakpoint()
+            excel_path = 'excels/Bristol.xlsx'
+            listing_sheet = 'Listing_3'
 
-        # excel_data_df = pd.read_excel(excel_path) # , sheet_name='Employees'
-        # excel_json_str = excel_data_df.to_json()
-        # print('Excel Sheet to JSON:\n', excel_json_str)
-        # breakpoint()
-        return Response({'data': json.dumps(excel_json_str), 'msg': f'User not a valid user'}, status=status.HTTP_200_OK)
-    # except:
-    #     return Response(status=status.HTTP_400_BAD_REQUEST)
+            # try:
+            df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
+
+            # Initialize data
+            data=[0 for i in range(len(df))]
+            excel_json_str = []
+            for i in range(len(df)):    
+                data[i] = { str(df.columns.values[0]): str(df.loc[i][0]), 
+                            str(df.columns.values[1]): str(df.loc[i][1]), 
+                            str(df.columns.values[2]): str(df.loc[i][2]),
+                            str(df.columns.values[3]): str(df.loc[i][3]),
+                            str(df.columns.values[4]): str(df.loc[i][4]),
+                            str(df.columns.values[5]): str(df.loc[i][5]), 
+                            str(df.columns.values[6]): str(df.loc[i][6]), 
+                            str(df.columns.values[7]): str(df.loc[i][7]), 
+                            str(df.columns.values[8]): str(df.loc[i][8]), 
+                            str(df.columns.values[9]): str(df.loc[i][9]), 
+                            str(df.columns.values[10]): str(df.loc[i][10]), 
+                            str(df.columns.values[11]): str(df.loc[i][11]), 
+                            str(df.columns.values[12]): str(df.loc[i][12]), 
+                            }
+                excel_json_str.append(data[i])
+            return Response({'data': json.dumps(excel_json_str), 'msg': f'User not a valid user'}, status=status.HTTP_200_OK)
+        return Response({'msg': 'Session not found.'}, status=status.HTTP_401_UNAUTHORIZED)

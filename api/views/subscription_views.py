@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework import generics, status
 from ..serializers.subscription_serializers import ReturnBasketSerializer, SubscriptionSerializer,  UnsubscribeSerializer, AddToBasketSerializer, GetBasketSerializer,CheckoutBasketSerializer
 from ..serializers.auth_serializers import SessionSerializer
-from ..models import Listing, User, Notification, Attachment, Session, City
+from ..models import Listing, User, Notification, Attachment, Session, City, Subscription
 from rest_framework.views import APIView 
 from rest_framework.response import Response 
 from django.http import JsonResponse
@@ -11,6 +11,10 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.core.paginator import Paginator
 import json
 from datetime import date
+import os
+import stripe
+
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
 class GetSubscriptionOptions(APIView):
     # serializer_class = RoomSerializer
@@ -128,7 +132,15 @@ class UnsubscribeFromCity(APIView):
                     city = city_query[0] 
 
                     # If in subscripted to cities
-                    if user.profile.cities.filter(name=city.name).exists():
+                    subscription_query = Subscription.objects.filter(city=city, user=user.profile)
+                    if subscription_query.exists():
+                        subscription = subscription_query[0]
+                        print(subscription)
+
+                        response = stripe.Subscription.delete(
+                            subscription.stripe_subscription_id, # CHECK THIS NOTATION
+                        )
+                        # breakpoint()
                         user.profile.cities.remove(city)
 
                     # If city merely in checkout basket
@@ -242,6 +254,122 @@ class GetBasket(APIView):
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({'msg': 'Session data not valid.'}, status=status.HTTP_401_UNAUTHORIZED)
          
+class StripeCheckout(APIView):
+    def post(self, request, format=None):
+
+        key = request.headers['Authorization'].split(' ')[1]
+        key_query_set = Session.objects.filter(key=key)
+
+        if key_query_set.exists():
+            username = key_query_set[0].username
+            print(key)
+
+            queryset = User.objects.filter(username=username)
+            if queryset.exists():
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+
+
+            # print(request.data)
+            data = request.data
+            # email = data['email']
+            payment_method_id = data['payment_method_id']
+            basket = data['product']
+
+            customer = check_stripe_customer(user, payment_method_id)
+
+            # # Create Payment slip, sent to Stripe
+            # test_payment_intent = stripe.PaymentIntent.create(
+            #     amount=1000, currency='pln', 
+            #     payment_method_types=['card'],
+            #     receipt_email='test@example.com')
+
+            # Create Subscription, send to Stripe
+            for city in basket['product']:
+                city_name = city['name']
+                city_country = city['country']
+                price = city['price']
+
+                city_query = City.objects.filter(name=city_name, country=city_country)
+                if city_query.exists():
+                    matching_city = city_query[0]
+
+                    # user already subscribed to that city
+                    cities_subscribed = user.profile.cities
+                    cities_subscribed_names = [city.name for city in cities_subscribed.all()]
+
+                    if matching_city in cities_subscribed.all():
+                    # if Subscription.objects.filter(user=user.profile, city=matching_city).exists():
+                        user.profile.cities_basket.remove(matching_city)
+                        return Response({'message': f'User {user.email} already subscribed to {city_name}. User successfully subscribed to \
+                        {*cities_subscribed_names,}'}, status=status.HTTP_400_BAD_REQUEST)
+
+                    if price == matching_city.price: # If correct price (just a check to make sure no messing around)
+                        create_stripe_subscription(customer, user, [matching_city])
+
+                    else:
+                        return Response({'message': f'Given price ({price}) for {matching_city.name} does not match that in database ({matching_city.price}).'}, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    return Response({'message': f'City {city_name} does not exist in database.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # print(test_payment_intent)
+            return Response( 
+                data={'customer_id': customer.id, 'message': 'Yup, potential error message'},
+                status=status.HTTP_200_OK
+            )
+
+# Checking if customer with provided email already exists. If not, create new customer. Returns customer.
+def check_stripe_customer(user, payment_method_id):
+
+    customer_data = stripe.Customer.list(email=user.email).data   
+    if len(customer_data) > 0:
+        customer = customer_data[0]
+        print(f'Customer with email {user.email} already exists')
+    else:
+        print('New customer')
+        # Creating customer
+        customer = stripe.Customer.create(
+            email = user.email, 
+            payment_method = payment_method_id,
+            invoice_settings = {
+                'default_payment_method': payment_method_id
+            }
+        )
+    return customer
+
+
+def create_stripe_subscription(customer, user, cities):
+    for city in cities:
+        print(city)
+        response = stripe.Subscription.create(
+                customer=customer,
+                items=[
+                    {
+                        'price': city.stripe_subscription_code, # Stripe city subscription ID
+                    }
+                ]
+            )
+
+        # If succesful subscription
+
+
+        # Save as subscription in DB 
+        Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=response.id)
+
+        # Delete from basket
+        user.profile.cities_basket.remove(city)
+
+        # Add new listings to User
+        for listing in Listing.objects.filter(city=city):
+            if listing.created_at <= date.today():
+                if listing.id not in user.profile.authorised_listings_leads:
+                    if listing.id not in user.profile.authorised_listings_contacted:
+                        if listing.id not in user.profile.authorised_listings_booked:
+                            user.profile.authorised_listings_leads.append(listing.id)
+        user.save()
+
 
 # Need to take in data from Stripe
 # class SubscribeToCity(APIView):

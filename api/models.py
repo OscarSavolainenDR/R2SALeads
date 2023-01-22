@@ -36,6 +36,7 @@ class City(models.Model):
     # tags = ArrayField(models.CharField(max_length=20)) # e.g beds
     # portal = models.CharField(max_length=30) # e.g zoopla
     description = models.CharField(max_length=200) # quant description of city
+    stripe_subscription_code = models.CharField(max_length=40, unique=True)
 
 
 class Listing(models.Model): #RandomIDModel
@@ -114,6 +115,7 @@ class Subscription(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     subscription_date = models.DateField(auto_now_add=True)
+    stripe_subscription_id = models.CharField(max_length=40)
 
 # Subscription checkout basket
 class Basket(models.Model):

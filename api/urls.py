@@ -1,10 +1,11 @@
 # Stores all urls local to this app (api)
 from django.urls import path
-from .views.setup_views import InitDB, UpdateListings
+from .views.setup_views_2 import InitDB, UpdateListings
 from .views.project_views import GetScrumBoard, GetScrumBoardMembers, UpdateScrumBoardBackend, DownloadExcel
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResetPasswordView
 from .views.notification_views import GetNotifications, GetNotificationCount
-from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket, GetBasket
+from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
+from .views.subscription_views import GetBasket, StripeCheckout #, SaveStripeInfo
 from .views.account_views import GetAccountSettingsData, GetAccountSettingsBillingData, UpdatePassword
 
 # API endpoints, tells us where the front-end 
@@ -25,7 +26,9 @@ urlpatterns = [
     path('subscriptions/unsubscribe', UnsubscribeFromCity.as_view()),
     path('subscriptions/add-to-basket', AddCitytoBasket.as_view()),
     path('subscriptions/get-basket', GetBasket.as_view()),
-
+    path('subscriptions/stripe-checkout', StripeCheckout.as_view()),
+    # path('subscriptions/save-stripe-info', SaveStripeInfo.as_view()),    
+    
     # Account
     path('account/setting', GetAccountSettingsData.as_view()),
     path('account/setting/billing', GetAccountSettingsBillingData.as_view()),
