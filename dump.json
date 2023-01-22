@@ -1,0 +1,104 @@
+[
+{
+  "model": "api.listing",
+  "pk": 1,
+  "fields": {
+    "city": "London",
+    "rent": 0,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+},
+{
+  "model": "api.listing",
+  "pk": 2,
+  "fields": {
+    "city": "London",
+    "rent": 0,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+},
+{
+  "model": "api.listing",
+  "pk": 3,
+  "fields": {
+    "city": "London",
+    "rent": 100,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+},
+{
+  "model": "api.listing",
+  "pk": 4,
+  "fields": {
+    "city": "London",
+    "rent": 200,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+},
+{
+  "model": "api.listing",
+  "pk": 5,
+  "fields": {
+    "city": "London",
+    "rent": 300,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+},
+{
+  "model": "api.listing",
+  "pk": 6,
+  "fields": {
+    "city": "London",
+    "rent": 400,
+    "expected_occupancy": 70,
+    "expected_profit": 1000,
+    "break_even_o": 50,
+    "url": "url",
+    "website": "Zoopla",
+    "agency_or_host": "Snack",
+    "address": "fvnnvdf",
+    "postcode": "ZHSYSU",
+    "listing_created_at": "2022-12-31"
+  }
+}
+]
