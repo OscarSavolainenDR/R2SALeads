@@ -147,6 +147,7 @@ const OrderProducts = ({data, fetchData}) => {
 
 	return (
 		<AdaptableCard className="mb-4">
+			<h5 className="mb-4">Basket</h5>
 			<Table {...getTableProps()}>
 				<THead className="!bg-transparent">
 					{headerGroups.map(headerGroup => (

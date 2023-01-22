@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
-import { apiGetSalesProducts, apiUnsubscribeCity, apiAddCityToBasket } from 'services/SubscribeService'
+import { apiGetSalesProducts, apiUnsubscribeCity, apiAddCityToBasket, apiStripeCheckout } from 'services/SubscribeService'
 
 export const getProducts = createAsyncThunk('salesProductList/data/getProducts',async (data) => {
     const response = await apiGetSalesProducts(data)
@@ -16,52 +16,57 @@ export const addCityToBasket = async (data) => {
     return response.status
 }
 
-export const initialTableData = {
-    total: 0,
-    pageIndex: 1,
-    pageSize: 10,
-    query: '',
-    sort: {
-        order: '',
-        key: ''
-    }
+export const stripeCheckout = async (data) => {
+    const response = await apiStripeCheckout(data)
+    return response
 }
 
-export const initialFilterData = {
-    name: '',
-    category: ['England', 'Wales', 'Scotland', 'Ireland'],
-    // beds: [1, 2, 3, 4, 5],
-    status: [0, 1, 2], // subscribed, in basket or not subscribed
-    productStatus: 0,
-}
+// export const initialTableData = {
+//     total: 0,
+//     pageIndex: 1,
+//     pageSize: 10,
+//     query: '',
+//     sort: {
+//         order: '',
+//         key: ''
+//     }
+// }
+
+// export const initialFilterData = {
+//     name: '',
+//     category: ['England', 'Wales', 'Scotland', 'Ireland'],
+//     // beds: [1, 2, 3, 4, 5],
+//     status: [0, 1, 2], // subscribed, in basket or not subscribed
+//     productStatus: 0,
+// }
 
 const dataSlice = createSlice({
-    name: 'salesProductList/data',
+    name: 'salesOrderDetails/data',
     initialState: {
         loading: false,
-        productList: [],
+        // productList: [],
         checkoutBasket: [],
-        tableData: initialTableData,
-        filterData: initialFilterData,
+        // tableData: initialTableData,
+        // filterData: initialFilterData,
     },
     reducers: {
-        updateProductList: (state, action) => {
-            state.productList = action.payload
-        },
+        // updateProductList: (state, action) => {
+        //     state.productList = action.payload
+        // },
         // updateCheckoutBasket: (state, action) => {
         //     state.checkoutBasket = action.payload
         // },
-        setTableData: (state, action) => {
-            state.tableData = action.payload
-        },
-        setFilterData: (state, action) => {
-            state.filterData = action.payload
-        },
+        // setTableData: (state, action) => {
+        //     state.tableData = action.payload
+        // },
+        // setFilterData: (state, action) => {
+        //     state.filterData = action.payload
+        // },
     },
     extraReducers: {
         [getProducts.fulfilled]: (state, action) => {
             state.productList = JSON.parse(action.payload.data)
-            state.tableData.total = action.payload.total
+            // state.tableData.total = action.payload.total
             state.loading = false
         },
         [getProducts.pending]: (state) => {

@@ -30,3 +30,11 @@ export async function apiGetCheckoutBasket () {
         method: 'post',
     })
 }
+
+export async function apiStripeCheckout (data) {
+    return ApiService.fetchData({
+        url: '/subscriptions/stripe-checkout',
+        method: 'post',
+        data,
+    })
+}

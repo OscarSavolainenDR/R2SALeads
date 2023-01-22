@@ -91,7 +91,7 @@ const OrderDetails = () => {
 								<OrderProducts data={data.product} fetchData={fetchData} />
 								<div className="xl:grid grid-cols-2 gap-4">
 									{/* <ShippingInfo data={data.shipping}/> */}
-									<PaymentSummary data={data.paymentSummary} />
+									<PaymentSummary data={data.paymentSummary} product={data.product} />
 								</div>
 								{/* <Activity data={data.activity} /> */}
 							</div>
