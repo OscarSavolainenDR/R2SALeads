@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Number of times to run the command
-num_iterations=1
+num_iterations=50
 
 for ((i = 1; i <= num_iterations; i++)); do
 
