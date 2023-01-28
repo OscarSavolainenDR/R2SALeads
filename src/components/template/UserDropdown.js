@@ -17,7 +17,7 @@ export const UserDropdown = ({ className }) => {
 
 	const { signOut } = useAuth()
 
-	const { avatar, user_name, authority, email } = useSelector((state) => state.auth.user)
+	const { avatar, username, authority, email } = useSelector((state) => state.auth.user)
 
 	const navigate = useNavigate()
 	const profile = () => {
@@ -29,7 +29,7 @@ export const UserDropdown = ({ className }) => {
 			<Avatar size={32} shape="circle" icon={<HiOutlineUser />} />
 			<div className="hidden md:block">
 				<div className="text-xs capitalize">User</div>
-				<div className="font-bold">{user_name}</div>
+				<div className="font-bold">{username}</div>
 			</div>
 		</div>
 	)
@@ -41,7 +41,7 @@ export const UserDropdown = ({ className }) => {
 					<div className="py-2 px-3 flex items-center gap-2">
 						<Avatar shape="circle" icon={<HiOutlineUser />} />
 						<div>
-							<div className="font-bold text-gray-900 dark:text-gray-100">{user_name}</div>
+							<div className="font-bold text-gray-900 dark:text-gray-100">{username}</div>
 							<div className="text-xs">{email}</div>
 						</div>
 					</div>

@@ -36,11 +36,6 @@ const Board = props => {
 		dispatch(getBoards())
 	}, [dispatch])
 
-	// const getInitialProps = ({ renderPage }) => {
-	// 	resetServerContext()
-	// }
-
-
 	const onDragEnd = result => {
 		if (result.combine) {
 			if (result.type === 'COLUMN') {
@@ -131,7 +126,7 @@ const Board = props => {
 					)}
 				</Droppable>
 			</DragDropContext>
-			{/* <Dialog
+			<Dialog
 				isOpen={dialogOpen}
 				onClose={onDialogClose}
 				onRequestClose={onDialogClose} 
@@ -144,7 +139,7 @@ const Board = props => {
 					{ dialogView === 'NEW_COLUMN' && <AddNewColumnContent />}
 					{ dialogView === 'ADD_MEMBER' && <AddNewMemberContent />}
 				</Suspense>
-			</Dialog> */}
+			</Dialog>
 		</>
 	)
 }

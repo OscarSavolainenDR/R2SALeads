@@ -9,7 +9,7 @@ import PaymentSummary from './components/PaymentSummary'
 // import CustomerInfo from './components/CustomerInfo'
 // import { HiOutlineCalendar } from 'react-icons/hi'
 import { apiGetCheckoutBasket } from 'services/SubscribeService'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import isEmpty from 'lodash/isEmpty'
 // import dayjs from 'dayjs'
 
@@ -24,6 +24,11 @@ import isEmpty from 'lodash/isEmpty'
 // }
 
 const OrderDetails = () => {
+
+	const navigate = useNavigate()
+    const TermsClick = () => {
+        navigate(`/app/legals/terms-and-conditions`)
+    }
 
 	const location = useLocation()
 
@@ -53,9 +58,25 @@ const OrderDetails = () => {
 				{!isEmpty(data) && (
 					<>
 						<div className="mb-6">
-							<div className="flex items-center mb-2">
+							<div className="flex items-center ">
 								<h3>
-									<span>Review Order</span>
+									<span className="mb-2">Review Order</span>
+									<span >
+									<p style={{ fontSize: '12px', fontWeight: 'normal'}}>
+										Upon payment, the subscription for the given cities will activate and payment will be taken.
+										The subscription will be renewed automatically every calender month. 
+										To cancel an active subscription, cancel it via the &nbsp;
+										<button style={{ fontWeight: 'bold'}} onClick={TermsClick}> Manage Lead Subscriptions </button>
+										&nbsp;page. 
+										<br />
+										Upon cancellation, the user will have access to the leads from the city in question until the next scheduled subscription date, 
+										when the subscription will deactivate and the user will lose access to those leads. 
+										For example, if a user subscribed on the 2nd of January, and cancelled on the 7th of February, 
+										they would have had access to the leads from that city from the 2nd of January until the 2nd of March,
+										and would have paid the susbcription fee from the 2nd of January until the 2nd of March.
+
+									</p>
+									</span>
 									{/* <span className="ltr:ml-2 rtl:mr-2">#{data.name}</span> */}
 								</h3>
 								{/* <Tag 
@@ -89,9 +110,10 @@ const OrderDetails = () => {
 						<div className="xl:flex gap-4">
 							<div className="w-full">
 								<OrderProducts data={data.product} fetchData={fetchData} />
+								
 								<div className="xl:grid grid-cols-2 gap-4">
 									{/* <ShippingInfo data={data.shipping}/> */}
-									<PaymentSummary data={data.paymentSummary} product={data.product} />
+									<PaymentSummary data={data.paymentSummary} product={data.product}/>
 								</div>
 								{/* <Activity data={data.activity} /> */}
 							</div>

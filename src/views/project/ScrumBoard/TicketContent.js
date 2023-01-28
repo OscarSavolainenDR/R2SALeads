@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { updateColumns, updateExcel } from './store/dataSlice'
 import { Spinner, Avatar, Tooltip, Card, Button, Input, Dropdown, Tag, Badge } from 'components/ui'
-import UsersAvatarGroup from 'components/shared/UsersAvatarGroup'
-import dayjs from 'dayjs'
+// import UsersAvatarGroup from 'components/shared/UsersAvatarGroup'
+// import dayjs from 'dayjs'
 import cloneDeep from 'lodash/cloneDeep'
 import { downloadExcelBackend } from './store/dataSlice'
 import { 
@@ -12,16 +12,16 @@ import {
 	HiOutlineClipboardList,
 	HiOutlinePaperClip,
 	HiOutlineDownload,
-	HiOutlineTrash,
-	HiOutlineChatAlt,
+	// HiOutlineTrash,
+	// HiOutlineChatAlt,
 	HiExternalLink,
 	HiX
 } from 'react-icons/hi'
 import isEmpty from 'lodash/isEmpty'
 import { createUID, taskLabelColors, labelList } from './utils'
 
-import axios, { AxiosRequestConfig } from 'axios';
-import appConfig from 'configs/app.config'
+// import axios, { AxiosRequestConfig } from 'axios';
+// import appConfig from 'configs/app.config'
 
 import exportFromJSON from 'export-from-json'
 
@@ -72,19 +72,19 @@ const TicketSection = ({title, icon, children, titleSize: Title = 'h6', ticketCl
 	)
 }
 
-const AddMoreMember = () => {
-	return (
-		<Tooltip title="Add More">
-			<Avatar 
-				className="cursor-pointer"
-				shape="circle"
-				size={30}
-			>
-				<HiOutlinePlus />
-			</Avatar>
-		</Tooltip>
-	)
-}
+// const AddMoreMember = () => {
+// 	return (
+// 		<Tooltip title="Add More">
+// 			<Avatar 
+// 				className="cursor-pointer"
+// 				shape="circle"
+// 				size={30}
+// 			>
+// 				<HiOutlinePlus />
+// 			</Avatar>
+// 		</Tooltip>
+// 	)
+// }
 
 
 const TicketContent = ({onTicketClose}) => {
@@ -106,7 +106,13 @@ const TicketContent = ({onTicketClose}) => {
 
 	const downloadExcel = async (file_id) => {
 
-		dispatch(downloadExcelBackend(file_id))
+		const excel = await downloadExcelBackend({file_id: file_id})
+
+		console.log(excel)
+
+		// Figure out smooth excel download
+
+		// dispatch(downloadExcelBackend(file_id))
 		dispatch(updateExcel(excel))
 		
 		const excel_array = JSON.parse(excel)

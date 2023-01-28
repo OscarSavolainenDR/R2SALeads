@@ -41,11 +41,11 @@ const PaymentSummary = ({data, product}) => {
 					<PaymentInfo label="Total" value={data.total} isLast />
 				</ul>
 			</Card>
-			<Card className="mb-4">
-				<Elements stripe={stripePromise}>
-					<StripeCheckoutForm product={product} />
-				</Elements>
-			</Card>
+			{/* <Card className="mb-4"> */}
+			<Elements stripe={stripePromise}>
+				<StripeCheckoutForm product={product} />
+			</Elements>
+			{/* </Card> */}
 		</div>
 	)
 }
