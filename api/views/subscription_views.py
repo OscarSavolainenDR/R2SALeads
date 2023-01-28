@@ -39,6 +39,7 @@ class GetSubscriptionOptions(APIView):
             else:
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
 
+            print(request.data)
 
             # NOTE: Add a serializer here, very important for query safety
             page_index = request.data['pageIndex']
@@ -46,7 +47,7 @@ class GetSubscriptionOptions(APIView):
             sort = request.data['sort']
             query = request.data['query']
             order = sort['order']
-            key = sort['key']
+            search_key = sort['key']
 
             cities = City.objects.exclude(name='None') # all cities
 
@@ -56,10 +57,24 @@ class GetSubscriptionOptions(APIView):
             # NOTE: put as search term in sorting
 
             # Sort data (by alphabetical order)
-            if order == 'desc':
-                cities = cities.order_by('name')
-            else:
-                cities = cities.order_by('-name')
+            if search_key:
+                if not search_key == 'status':
+                    if order == 'desc':
+                        cities = cities.order_by(search_key)
+                    else: 
+                        cities = cities.order_by('-' + search_key)
+                else: 
+                    # import pdb; pdb.set_trace()
+                    # we want to find all cities the user is subscribed to, and sort the cities by that order
+                    subscribed = user.profile.cities.all()
+                    all_not_subscribed = City.objects.exclude(pk__in=subscribed.values_list('pk', flat=True))
+                    all_not_subscribed = all_not_subscribed.exclude(name='None')
+
+                    if order == 'desc':
+                        cities = subscribed.union(all_not_subscribed, all=True) 
+                    else:
+                        cities = all_not_subscribed.union(subscribed, all=True) 
+                        
 
             # Bunch into pages, maybe do myself.
             p = Paginator(cities, page_size)
@@ -71,7 +86,7 @@ class GetSubscriptionOptions(APIView):
                 # Check if city is in user subscriptions
                 # city.user_set.all()
                 if user.profile.cities.filter(name=city.name).exists():
-                    subscribed = 0
+                    subscribed = 0  # subscribed
                 elif user.profile.cities_basket.filter(name=city.name).exists():
                     subscribed = 1
                     # city_subscription_statuses.append([city.id, 0]) # subscribed
@@ -131,7 +146,7 @@ class UnsubscribeFromCity(APIView):
                 if city_query.exists():
                     city = city_query[0] 
 
-                    # If in subscripted to cities
+                    # If in subscripted-to-cities
                     subscription_query = Subscription.objects.filter(city=city, user=user.profile)
                     if subscription_query.exists():
                         subscription = subscription_query[0]
@@ -364,10 +379,13 @@ def create_stripe_subscription(customer, user, cities):
         # Add new listings to User
         for listing in Listing.objects.filter(city=city):
             if listing.created_at <= date.today():
-                if listing.id not in user.profile.authorised_listings_leads:
-                    if listing.id not in user.profile.authorised_listings_contacted:
-                        if listing.id not in user.profile.authorised_listings_booked:
-                            user.profile.authorised_listings_leads.append(listing.id)
+                if listing not in user.profile.user_listings.all():
+                    # NOTE: need to set listing status to 0 for that user.
+                    user.profile.user_listings.add(listing)
+                # if listing.id not in user.profile.authorised_listings_leads:
+                #     if listing.id not in user.profile.authorised_listings_contacted:
+                #         if listing.id not in user.profile.authorised_listings_booked:
+                #             user.profile.authorised_listings_leads.append(listing.id)
         user.save()
 
 

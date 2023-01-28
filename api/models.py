@@ -60,8 +60,9 @@ class Listing(models.Model): #RandomIDModel
     # id_str = models.CharField(max_length=12, unique=True)
     # city = models.CharField(max_length=20) # Which city the listing is in
     city = models.ForeignKey(City, on_delete=models.CASCADE)
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=150)
     description = models.CharField(max_length=1000)
+    expected_income = models.IntegerField(null=False, default=50)
     rent = models.CharField(max_length=30)
     breakeven_occupancy = models.CharField(max_length=30)
     # attachments = models.ForeignKey('Attachment', on_delete=models.CASCADE, blank=True, null=True)
@@ -69,7 +70,7 @@ class Listing(models.Model): #RandomIDModel
     labels = ArrayField(models.CharField(max_length=15, unique=False))
     # now()
     expired_date = models.DateField(default=future_date) #datetime.strptime(, '%Y%m%d'))
-    url = models.CharField(max_length=100, unique=True, null=True)
+    url = models.CharField(max_length=250, unique=True, null=True)
     created_at = models.DateField(default=now)
 
     attachments = models.ManyToManyField('Attachment',
@@ -85,6 +86,10 @@ class Profile(models.Model):
                                      through='Basket', related_name='cities_in_basket')
 
     # cities = ArrayField(models.CharField(max_length=30, blank=True))
+    user_listings = models.ManyToManyField('Listing',
+                                     through='Authorised_Listings')
+
+
     authorised_listings_leads = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
     authorised_listings_contacted = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
     authorised_listings_booked = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default) # Viewing booked
@@ -114,6 +119,7 @@ def save_user_profile(sender, instance, **kwargs):
 class Subscription(models.Model):
     user = models.ForeignKey(Profile, on_delete=models.CASCADE)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
+    status = models.IntegerField(null=False, default=2)  # unused
     subscription_date = models.DateField(auto_now_add=True)
     stripe_subscription_id = models.CharField(max_length=40)
 
@@ -152,3 +158,8 @@ class ResetPassword(models.Model):
     uid = models.CharField(max_length=10, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
+
+class Authorised_Listings(models.Model):
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+    status = models.IntegerField(null=False, default=0)  # lead, contacted or viewing booked

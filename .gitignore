@@ -87,3 +87,7 @@ local_settings.py
 
 .env
 db.sqlite3
+
+# Mine
+To_dos.txt
+.gitignore

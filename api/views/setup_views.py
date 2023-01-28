@@ -12,6 +12,7 @@ import json
 from datetime import date, timedelta
 import stripe
 import os
+import numpy as np
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
@@ -30,7 +31,7 @@ class InitDB(APIView):
                         'expected_profit': 1000,
                         'expected_ADR': 100,
                         'break_even_o': 50,
-                        'url': f'{i+10}.co.uk',
+                        'url': f'{i+100}.co.uk',
                         'website': 'Zoopla',
                         'agency_or_host': 'Snack',
                         'address': 'fvnnvdf',
@@ -46,7 +47,7 @@ class InitDB(APIView):
         #     print(all_listings[0])
 
         # Check if database already has these, if so skip
-        city = City(name='London', country ='England', stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ')
+        city = City(name='London', country ='England', price=200, stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ')
         if not City.objects.filter(name='London').exists():
             city.save()
             city = City.objects.filter(name='London')[0]
@@ -101,82 +102,41 @@ class InitDB(APIView):
         # authorised listing_ids)
         # if not user_queryset.exists():   
         # london = City(name='London', tags=[])
-        london = City.objects.filter(name='London')[0]
+        # london = City.objects.filter(name='London')[0]
         belfast = City(name='Belfast',country='Ireland', stripe_subscription_code='price_1MTAF7JeYWzBWqCqabe0l1wi')
         if not City.objects.filter(name='Belfast').exists():
             belfast.save()
-        else:
-            belfast = City.objects.filter(name='Belfast')[0]
+        # else:
+        #     belfast = City.objects.filter(name='Belfast')[0]
         dublin = City(name='Dublin', country='Ireland', stripe_subscription_code='price_1MTAETJeYWzBWqCqN7QY44Et')
         if not City.objects.filter(name='Dublin').exists():
             dublin.save()
-        else:
-            dublin = City.objects.filter(name='Dublin')[0]
+        # else:
+        #     dublin = City.objects.filter(name='Dublin')[0]
 
-        tim = User(username='Tim', password='Tim', 
-                email='tim@hotmail.com',
-                )
+        Bristol = City(name='Bristol', country='England', stripe_subscription_code='price_1MVZsfJeYWzBWqCq2tnfHyMu')
+        if not City.objects.filter(name='Bristol').exists():
+            Bristol.save()
+        # else:
+        #     Bristol = City.objects.filter(name='Bristol')[0]
+
+        
+
+        
         if not User.objects.filter(username='Tim').exists():
+            tim = User(username='Tim', password='Tim', 
+                email='tim@hotmail.com')
             tim.save()
-            tim.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            tim.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            tim.profile.authorised_listings_booked=[listing_queryset[3].id]
-
-            # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(tim, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, tim, [london, belfast])
-            # tim.save()
-            # tim.cities.add(london)
-            # tim.cities.add(belfast)
-            # tim.save()
             
-
-        bob =  User(username='Bob', password='Bob',  
-                email='bob@hotmail.com',
-                # authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id], 
-                # authorised_listings_contacted=[listing_queryset[1].id],
-                # authorised_listings_booked=[listing_queryset[3].id],
-                )
         if not User.objects.filter(username='Bob').exists():
+            bob =  User(username='Bob', password='Bob',  
+                    email='bob@hotmail.com')
             bob.save()
-            bob.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            bob.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            bob.profile.authorised_listings_booked=[listing_queryset[3].id]
-            bob.save()
-            # bob.cities.set([dublin, belfast])
 
-            # # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(bob, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, bob, [dublin, belfast])
-
-            # s1 = Subscription.objects.create(user=bob.profile, city=dublin)
-            # s2 = Subscription.objects.create(user=bob.profile, city=belfast)
-            # bob.cities.add(dublin)
-            # bob.cities.add(belfast)
-            # bob.save()
- 
-        admin = User(username='admin', password='abc',
-                email = 'admin@hotmail.com',
-                )
         if not User.objects.filter(username='admin').exists():
+            admin = User(username='admin', password='abc',
+                email = 'admin@hotmail.com')
             admin.save()
-            admin.profile.authorised_listings_leads=[listing_queryset[0].id,listing_queryset[2].id]
-            admin.profile.authorised_listings_contacted=[listing_queryset[1].id]
-            admin.profile.authorised_listings_booked=[listing_queryset[3].id]
-            admin.save()
-
-            # # Subscribe to Stripe
-            # from .subscription_views import check_stripe_customer, create_stripe_subscription
-            # customer = check_stripe_customer(admin, 'pm_1MTKqBJeYWzBWqCqovR9FarF')
-            # create_stripe_subscription(customer, admin, [london, belfast])
-
-            # s1_a = Subscription.objects.create(user=admin.profile, city=london)
-            # s2_a = Subscription.objects.create(user=admin.profile, city=belfast)
-            # admin.cities.add(london)
-            # admin.cities.add(belfast)
-            # admin.save()
 
         # Notifications
 
@@ -206,56 +166,73 @@ class UpdateListings(APIView):
             elif listing.expired_date < self.today - timedelta(days=3):
                 listing.delete() 
           
-        # Load new listings
-        with open('json_data.json') as json_file:
-            all_listings = json.load(json_file)
-            print(all_listings[0])
-
-        # Store in DB if new
-        for i, listing in enumerate(all_listings):
-            print(listing)
-            city = City(name=listing['city'], country ='England')
-            if not City.objects.filter(name=listing['city']).exists():
-                city.save()
-                city = City.objects.filter(name=listing['city'])[0]
-            else:
-                city = City.objects.filter(name=listing['city'])[0]
-                
-            l = Listing(city = city,
-                        name = f"Postcode: {listing['postcode']} - Expected profit: {listing['expected_profit']}",
-                        rent = f"Rent: {listing['rent']} ppm",
-                        breakeven_occupancy = f"Breakeven Occupancy: {listing['break_even_o']}%",
-                        description =   f"Expected ADR: {listing['expected_ADR']}; Expected Occupancy: {listing['expected_occupancy']}%; Agency/Host: {listing['agency_or_host']}",
-                        comments = '',
-                        url = listing['url'] + str(i+10),
-                        labels = [f'{i} bed', '1k+ profit'])
-            l.save()
-            attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
-                            src=listing['excel_file'],
-                            size='1kb',)
-            attachment.save()
-            l.attachments.add(attachment)
-            # l.url = 
-
-            if not Listing.objects.filter(url=listing['url']).exists():
-                l.save()
-            else:
-                print('Listing already exists')
+        load_and_store_new_listings('London')
+        load_and_store_new_listings('Bristol')
 
         # Add new listings to Users
         for listing in Listing.objects.filter():
             # Runs once a day, should catch all new ones.
             # Although more robust to go through all listings
             if listing.created_at <= self.today:
-                print('Listing:', listing.url, listing.id)
-                for user in User.objects.filter():
+                # print('Listing:', listing.url, listing.id)
+                for user in User.objects.filter(): 
                     if user.profile.cities.filter(name=listing.city.name).exists():
                         print(f'Adding listings to {user.username} leads list')
-                        if listing.id not in user.profile.authorised_listings_leads:
-                            if listing.id not in user.profile.authorised_listings_contacted:
-                                if listing.id not in user.profile.authorised_listings_booked:
-                                    user.profile.authorised_listings_leads.append(listing.id)
+                        if listing not in user.profile.user_listings.all():
+                            # NOTE: need to set listing status to 0 for that user.
+                            user.profile.user_listings.add(listing)
+                        # if listing.id not in user.profile.authorised_listings_leads:
+                        #     if listing.id not in user.profile.authorised_listings_contacted:
+                        #         if listing.id not in user.profile.authorised_listings_booked:
+                        #             user.profile.authorised_listings_leads.append(listing.id)
                     user.save()
  
         return Response(status=status.HTTP_200_OK)
 
+
+def load_and_store_new_listings(city):
+    # Load new listings
+    with open('json_data_' + city + '.json') as json_file:
+        all_listings = json.load(json_file)
+        # print(all_listings[0])
+
+    # Store in DB if new
+    for i, listing in enumerate(all_listings):
+        
+        city_query = City.objects.filter(name=listing['city'])
+        if not city_query.exists():
+            city = City(name=listing['city'], country=listing['country'])
+            city.save()
+        else:
+            city = city_query[0]
+
+        bedrooms = listing['bedrooms']
+        profit = int(listing['median_income'] - listing['rent'] * 1.3)
+        round_profit = np.floor(profit / 1000 )  # profit in 1000's
+        
+        if round_profit == 0: # If lower than 1000, give profit in 100s
+            round_profit = int(np.floor(profit / 100 ))  # profit in 1000's
+            labels = [f'{bedrooms} bed', f'{round_profit}00+ profit']
+        else:
+            labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
+
+        
+        print( f"Postcode: {listing['postcode']} - £{profit}/month")
+        
+        l = Listing(city = city,
+                    name = f"Postcode: {listing['postcode']} - £{profit}/month",
+                    rent = f"Rent: {listing['rent']} ppm",
+                    description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
+                    comments = '',
+                    url = listing['url'],
+                    labels = labels )
+
+        if not Listing.objects.filter(url=listing['url']).exists():
+            l.save()
+            attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
+                        src=listing['excel_sheet'],
+                        size='1kb',)
+            attachment.save()
+            l.attachments.add(attachment)
+        else:
+            print('Listing already exists')
