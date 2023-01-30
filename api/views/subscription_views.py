@@ -39,7 +39,7 @@ class GetSubscriptionOptions(APIView):
             else:
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
 
-            print(request.data)
+            print('Requested subscription options:', request.data)
 
             # NOTE: Add a serializer here, very important for query safety
             page_index = request.data['pageIndex']

@@ -15,6 +15,6 @@ from ..models import Listing, Notification
 class ListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Listing
-        fields = ('id', 'city', 'name', 'description', 'rent', 'breakeven_occupancy',
+        fields = ('id', 'city', 'name', 'description', 'rent', 'breakeven_occupancy', 'expected_income',
          'attachments', 'comments', 'labels', 'url') # The fields we want to return
 

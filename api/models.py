@@ -44,34 +44,21 @@ class Listing(models.Model): #RandomIDModel
 
     def future_date():
         return date.today() + timedelta(days=60)
-    # city = models.CharField(max_length=12) # Which city the listing is in
-    # rent = models.IntegerField(null=False)
-    # expected_occupancy = models.IntegerField(null=False, default=0)
-    # expected_profit = models.IntegerField(null=False, default=0)
-    # break_even_o = models.IntegerField(null=False, default=0)
-    # url = models.CharField(max_length=50)
-    # website = models.CharField(max_length=20, unique=False)  # Zoopla, OpenRent, etc.
-    # agency_or_host = models.CharField(max_length=20, unique=False) 
-    # address = models.CharField(max_length=50, unique=False) # unique=True
-    # postcode = models.CharField(max_length=10, unique=False)
-    # listing_created_at = models.DateField(auto_now_add=True) 
-
     id = models.CharField(primary_key=True, max_length=18, default=generate_unique_code, unique=True)
-    # id_str = models.CharField(max_length=12, unique=True)
-    # city = models.CharField(max_length=20) # Which city the listing is in
     city = models.ForeignKey(City, on_delete=models.CASCADE)
-    name = models.CharField(max_length=150)
+    postcode = models.CharField(max_length=10)
     description = models.CharField(max_length=1000)
-    expected_income = models.IntegerField(null=False, default=50)
-    rent = models.CharField(max_length=30)
-    breakeven_occupancy = models.CharField(max_length=30)
-    # attachments = models.ForeignKey('Attachment', on_delete=models.CASCADE, blank=True, null=True)
+    expected_income = models.IntegerField(default=50)
+    profit = models.IntegerField(default=50)
+    rent = models.IntegerField(default=50)
+    breakeven_occupancy = models.IntegerField(default=110)
     comments = models.CharField(max_length=250)
+    bedrooms = models.IntegerField(default=50)
     labels = ArrayField(models.CharField(max_length=15, unique=False))
-    # now()
-    expired_date = models.DateField(default=future_date) #datetime.strptime(, '%Y%m%d'))
+    expired_date = models.DateField(default=future_date)
     url = models.CharField(max_length=250, unique=True, null=True)
     created_at = models.DateField(default=now)
+    excel_sheet = models.IntegerField(default=0)
 
     attachments = models.ManyToManyField('Attachment',
                                      related_name='attachments_to_listing')

@@ -22,22 +22,22 @@ class InitDB(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
         
-        city = 'London'
-        all_listings = []
-        for i in range(5):
-            listing = { 'city': city,
-                        'rent': i * 100,
-                        'expected_occupancy': 70,
-                        'expected_profit': 1000,
-                        'expected_ADR': 100,
-                        'break_even_o': 50,
-                        'url': f'{i+100}.co.uk',
-                        'website': 'Zoopla',
-                        'agency_or_host': 'Snack',
-                        'address': 'fvnnvdf',
-                        'postcode': 'ZHSYSU',
-                        'excel_file': f'dd_{i}.xlsx'}
-            all_listings.append(listing)
+        # city = 'London'
+        # all_listings = []
+        # for i in range(5):
+        #     listing = { 'city': city,
+        #                 'rent': i * 100,
+        #                 'expected_occupancy': 70,
+        #                 'expected_profit': 1000,
+        #                 'expected_ADR': 100,
+        #                 'break_even_o': 50,
+        #                 'url': f'{i+100}.co.uk',
+        #                 'website': 'Zoopla',
+        #                 'agency_or_host': 'Snack',
+        #                 'address': 'fvnnvdf',
+        #                 'postcode': 'ZHSYSU',
+        #                 'excel_file': f'dd_{i}.xlsx'}
+        #     all_listings.append(listing)
         # import os
         # print(os. getcwd())
         # C:\Users\oscar\OneDrive\Desktop\Real estate\R2SA_app\working_dir_3\R2SA_app\backend-django\backend_v3\backend_v3\
@@ -53,43 +53,44 @@ class InitDB(APIView):
             city = City.objects.filter(name='London')[0]
         else:
             city = City.objects.filter(name='London')[0]      
-        listing_queryset = Listing.objects.filter(city=city)
+        # listing_queryset = Listing.objects.filter(city=city)
 
-        # Loop through Listings, load to DB
-        if not listing_queryset.exists():
-            for i, listing in enumerate(all_listings):
-                print(listing)
-                # d = Listing(city = True)
-                # print(d)
-                city = City(name=listing['city'], country ='England')
-                if not City.objects.filter(name=listing['city']).exists():
-                    city.save()
-                    city = City.objects.filter(name=listing['city'])[0]
-                else:
-                    city = City.objects.filter(name=listing['city'])[0]
-                l = Listing(city = city,
-                            name = f"Postcode: {listing['postcode']} - Expected profit: {listing['expected_profit']}",
-                            rent = f"Rent: {listing['rent']} ppm",
-                            breakeven_occupancy = f"Breakeven Occupancy: {listing['break_even_o']}%",
-                            description =   f"Expected ADR: {listing['expected_ADR']}; Expected Occupancy: {listing['expected_occupancy']}%; Agency/Host: {listing['agency_or_host']}",
-                            comments = '',
-                            labels = [f'{i} bed', '1k+ profit'])
-                l.save()
-                # attachment =    Attachment(name = f'due_diligence_{l.id}',
-                #                 src=listing['excel_file'],
-                #                 size='1kb',)
-                # attachment.save()
-                # l.attachments = attachment
-                attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
-                                # src=listing['excel_file'],
-                                src=listing['excel_file'],
-                                size='1kb',) 
-                l.attachments.add(attachment)
-                l.expired_date = self.today - timedelta(days=i-2)
-                l.url = listing['url']
-                l.created_at = self.today - timedelta(days=10) # created 10 days ago
-                print('Model instance', l)
-                l.save()
+        # # Loop through Listings, load to DB
+        # if not listing_queryset.exists():
+        #     for i, listing in enumerate(all_listings):
+        #         print(listing)
+        #         # d = Listing(city = True)
+        #         # print(d)
+        #         city = City(name=listing['city'], country ='England')
+        #         if not City.objects.filter(name=listing['city']).exists():
+        #             city.save()
+        #             city = City.objects.filter(name=listing['city'])[0]
+        #         else:
+        #             city = City.objects.filter(name=listing['city'])[0]
+        #         l = Listing(city = city,
+        #                     postcode = f"Postcode: {listing['postcode']}",
+        #                     rent = int(listing['rent']),
+        #                     breakeven_occupancy = int(listing['break_even_o']),
+        #                     description =   f"Expected ADR: {listing['expected_ADR']}; Expected Occupancy: {listing['expected_occupancy']}%; Agency/Host: {listing['agency_or_host']}",
+        #                     comments = '',
+        #                     bedrooms = i,
+        #                     labels = [f'{i} bed', '1k+ profit'])
+        #         l.save()
+        #         # attachment =    Attachment(name = f'due_diligence_{l.id}',
+        #         #                 src=listing['excel_file'],
+        #         #                 size='1kb',)
+        #         # attachment.save()
+        #         # l.attachments = attachment
+        #         attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
+        #                         # src=listing['excel_file'],
+        #                         src=listing['excel_file'],
+        #                         size='1kb',) 
+        #         l.attachments.add(attachment)
+        #         l.expired_date = self.today - timedelta(days=i-2)
+        #         l.url = listing['url']
+        #         l.created_at = self.today - timedelta(days=10) # created 10 days ago
+        #         print('Model instance', l)
+        #         l.save()
 
         # Save Users to DB  
         # Check if database already has these, if so skip
@@ -154,20 +155,12 @@ class UpdateListings(APIView):
     today = date.today()
     def post(self, request, format=None):
 
-        # If listing is expired, delete. 
-        # If recently expired, mark it as expired
-        # so doesn't just disappear from frontend
-        listing_queryset = Listing.objects.filter()
-        for listing in listing_queryset:
-            # If expired recently
-            if listing.expired_date <= self.today:
-                listing.name = 'Listing no longer on the market'
-            # If expired more than 3 days ago
-            elif listing.expired_date < self.today - timedelta(days=3):
-                listing.delete() 
-          
-        load_and_store_new_listings('London')
-        load_and_store_new_listings('Bristol')
+        # Make sure only requests with the code get through
+        # if request.data['code'] == 'update':
+        #     pass
+            
+        # load_and_store_new_listings('London')
+        load_and_store_new_listings('Bristol', self.today)
 
         # Add new listings to Users
         for listing in Listing.objects.filter():
@@ -186,19 +179,49 @@ class UpdateListings(APIView):
                         #         if listing.id not in user.profile.authorised_listings_booked:
                         #             user.profile.authorised_listings_leads.append(listing.id)
                     user.save()
- 
+
         return Response(status=status.HTTP_200_OK)
 
 
-def load_and_store_new_listings(city):
+def load_and_store_new_listings(city, today):
     # Load new listings
     with open('json_data_' + city + '.json') as json_file:
         all_listings = json.load(json_file)
         # print(all_listings[0])
 
+    # If existing listing is expired, delete. 
+    # If recently expired, mark it as expired
+    # so doesn't just disappear from frontend
+    listing_queryset = Listing.objects.filter()
+    for listing in listing_queryset:
+        # If expired recently
+        if listing.expired_date <= today:
+            listing.url = 'Listing no longer on the market'
+            listing.postcode = 'X'
+        # If expired more than 3 days ago
+        elif listing.expired_date < today - timedelta(days=3):
+            listing.delete() 
+
+    # Delete all past listings (risky, think of a better way)
+    # listing_queryset = Listing.objects.filter()
+    # Listing.objects.all().delete()
+    # for listing in listing_queryset:
+    #     listing.delete()
+
     # Store in DB if new
     for i, listing in enumerate(all_listings):
-        
+
+        # Skip already existing listings in DB
+        check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
+        if check_if_already_in_DB.exists():
+            # If rent is the same, skip
+            if check_if_already_in_DB[0].rent == listing['rent']:
+                continue
+            # Otherwise delete the lisitng, go again
+            else:
+                check_if_already_in_DB[0].delete()
+                # Could have a listing['reduced'] = True here, and do something with that to signal to front end listing is reduced
+
         city_query = City.objects.filter(name=listing['city'])
         if not city_query.exists():
             city = City(name=listing['city'], country=listing['country'])
@@ -207,7 +230,9 @@ def load_and_store_new_listings(city):
             city = city_query[0]
 
         bedrooms = listing['bedrooms']
-        profit = int(listing['median_income'] - listing['rent'] * 1.3)
+        expenses = listing['rent'] * 1.3
+        profit = int(listing['median_income'] - expenses)
+        breakeven_occupancy = int(expenses / listing['median_income'] * 100)
         round_profit = np.floor(profit / 1000 )  # profit in 1000's
         
         if round_profit == 0: # If lower than 1000, give profit in 100s
@@ -219,13 +244,21 @@ def load_and_store_new_listings(city):
         
         print( f"Postcode: {listing['postcode']} - £{profit}/month")
         
-        l = Listing(city = city,
-                    name = f"Postcode: {listing['postcode']} - £{profit}/month",
-                    rent = f"Rent: {listing['rent']} ppm",
-                    description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
-                    comments = '',
-                    url = listing['url'],
-                    labels = labels )
+        l = Listing(
+                city = city,
+                postcode = f"{listing['postcode']}",
+                rent = int(listing['rent']),
+                breakeven_occupancy = breakeven_occupancy,
+                expected_income = int(listing['median_income']),
+                profit = profit,
+                description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
+                comments = '',
+                bedrooms = bedrooms,
+                url = listing['url'],
+                labels = labels,
+                excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1]),
+            )
+        # breakpoint()
 
         if not Listing.objects.filter(url=listing['url']).exists():
             l.save()

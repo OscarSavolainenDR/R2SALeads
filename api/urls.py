@@ -1,7 +1,7 @@
 # Stores all urls local to this app (api)
 from django.urls import path
 from .views.setup_views import InitDB, UpdateListings
-from .views.project_views import GetScrumBoard_2, GetScrumBoardMembers, UpdateScrumBoardBackend, DownloadExcel, GetTableLeads
+from .views.project_views import GetScrumBoard, GetScrumBoardMembers, UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResetPasswordView
 from .views.notification_views import GetNotifications, GetNotificationCount
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
@@ -16,10 +16,11 @@ urlpatterns = [
     path('update-listings', UpdateListings.as_view()),
 
     # Project URLs
-    path('project/scrum-board/boards', GetScrumBoard_2.as_view()),
+    path('project/scrum-board/boards', GetScrumBoard.as_view()),
     path('project/scrum-board/members', GetScrumBoardMembers.as_view()),
     path('project/scrum-board/update-backend', UpdateScrumBoardBackend.as_view()),
     path('project/scrum-board/download-excel', DownloadExcel.as_view()),
+    path('project/leads-list/update-backend', UpdateLeadsListBackend.as_view()),
 
     # Table View
     path('project/table-view/get-leads', GetTableLeads.as_view()), 
