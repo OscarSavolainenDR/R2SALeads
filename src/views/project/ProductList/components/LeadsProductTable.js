@@ -280,7 +280,7 @@ const LeadsProductTable = () => {
 			},
 		},
 		{
-			Header: 'Excel',
+			Header: 'Due Diligence Excel',
 			accessor: 'excel',
 			sortable: true,
 			Cell: props => {
