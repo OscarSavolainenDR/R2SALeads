@@ -15,6 +15,14 @@ export async function apiUpdateLeadsListBackend (data) {
     })
 }
 
+export async function apiGetLeadsTable (data) {
+    return ApiService.fetchData({
+        url: '/project/table-view/get-leads',
+        method: 'post',
+        data
+    })
+}
+
 
 export async function apiUpdateBoardBackend (data) {
     return ApiService.fetchData({
