@@ -299,7 +299,6 @@ class GetScrumBoard(APIView):
 
                 # Add to appropriate queryset based on listing status
                 if listing_status == 0:
-                    
                     listing_queryset_leads |= Listing.objects.filter(pk=listing.pk)
                 elif listing_status == 1:
                     listing_queryset_contacted |= Listing.objects.filter(pk=listing.pk)
