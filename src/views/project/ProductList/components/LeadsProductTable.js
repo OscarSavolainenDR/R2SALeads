@@ -150,15 +150,15 @@ const LeadsProductTable = () => {
 	
 
 	const columns = useMemo(() => [
-		{
-			Header: 'Name',
-			accessor: 'name',
-			sortable: true,
-			Cell: props => {
-				const row = props.row.original
-				return <ProductColumn row={row} />
-			},
-		},
+		// {
+		// 	Header: 'Name',
+		// 	accessor: 'name',
+		// 	sortable: true,
+		// 	Cell: props => {
+		// 		const row = props.row.original
+		// 		return <ProductColumn row={row} />
+		// 	},
+		// },
 		{
 			Header: 'City',
 			accessor: 'city',
@@ -178,6 +178,17 @@ const LeadsProductTable = () => {
 				const row = props.row.original
 				return (
 					<span className="capitalize">{row.country}</span>
+				)
+			},
+		},
+		{
+			Header: 'Postcode',
+			accessor: 'postcode',
+			sortable: true,
+			Cell: props => {
+				const row = props.row.original
+				return (
+					<span className="capitalize">{row.postcode}</span>
 				)
 			},
 		},
@@ -233,17 +244,6 @@ const LeadsProductTable = () => {
 			},
 		},
 		{
-			Header: 'Profit',
-			accessor: 'profit',
-			sortable: true,
-			Cell: props => {
-				const { profit } = props.row.original
-				return (
-					<span>£{profit}</span>
-				)
-			},
-		},
-		{
 			Header: 'Expected Income',
 			accessor: 'expected_income',
 			sortable: true,
@@ -255,13 +255,27 @@ const LeadsProductTable = () => {
 			},
 		},
 		{
+			Header: 'Profit',
+			accessor: 'profit',
+			sortable: true,
+			Cell: props => {
+				const { profit } = props.row.original
+				return (
+					<span>£{profit}</span>
+				)
+			},
+		},
+		{
 			Header: 'URL',
 			accessor: 'url',
 			sortable: true,
 			Cell: props => {
 				const { url } = props.row.original
+				const { textTheme } = useThemeClass()
 				return (
-					<span>{url}</span>
+					<span className={`cursor-pointer hover:${textTheme}`}>
+						<a href={url} target="_blank">{url}</a>
+					</span>
 				)
 			},
 		},
