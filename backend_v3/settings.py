@@ -31,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -145,7 +145,11 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CORS_ORIGIN_WHITELIST = [
     'https://localhost:3000',
     'https://r2sa-v1-frontend.herokuapp.com',
-]
+    'https://r2sa-leads.co.uk',
+    'https://www.r2sa-leads.co.uk',
+    'http://r2sa-leads.co.uk',
+    'https://r2sa-leads.com'
+    'https://www.r2sa-leads.com']
 
 # May need to replace with django_on_heroku, maintained package
 import django_heroku

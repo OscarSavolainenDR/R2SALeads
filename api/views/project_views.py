@@ -227,13 +227,13 @@ class GetTableLeads(APIView):
                 l = {
                         'city': 'Subscribe',
                         'country': 'to a City',
-                        'postcode': 'to get Leads',
+                        'postcode': '',
                         'bedrooms': 0,
                         'rent': 0,
                         'expected_income': 0,
                         'profit': 0,
                         'status': 0,
-                        'url': ''
+                        'url': 'to get Leads'
                     }
                 sent_listings.append(l)
                 # print(serialized_q)
