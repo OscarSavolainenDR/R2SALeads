@@ -127,7 +127,7 @@ const LeadsProductTable = () => {
 	
 	const downloadExcel = async (file_id) => {
 
-		console.log(file_id)
+		// console.log(file_id)
 
 		const excel = await downloadExcelBackend({file_id: file_id})
 

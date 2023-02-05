@@ -14,25 +14,37 @@ const navigationConfig = [
 		authority: [],
         subMenu: []
     },
+	
 	{
-		key: 'appsProject.scrumBoard',
-		path: `${APP_PREFIX_PATH}/project/scrum-board`,
-		title: 'Leads - Board',
-		translateKey: 'nav.appsProject.scrumBoard',
+		key: 'appsProject',
+		path: '',
+		title: 'Leads',
+		translateKey: 'Leads',
 		icon: 'scrumBoard',
-		type: NAV_ITEM_TYPE_ITEM,
+		type: NAV_ITEM_TYPE_TITLE,
 		authority: [ADMIN, USER],
-		subMenu: []
-	},
-	{
-		key: 'appsProject.tableView',
-		path: `${APP_PREFIX_PATH}/project/table-view`,
-		title: 'Leads - Table View',
-		translateKey: 'nav.appsProject.tableView',
-		icon: 'scrumBoard',
-		type: NAV_ITEM_TYPE_ITEM,
-		authority: [ADMIN, USER],
-		subMenu: []
+		subMenu: [
+			{
+				key: 'appsProject.tableView',
+				path: `${APP_PREFIX_PATH}/project/table-view`,
+				title: 'Table View',
+				translateKey: 'nav.appsProject.tableView',
+				icon: '',
+				type: NAV_ITEM_TYPE_ITEM,
+				authority: [ADMIN, USER],
+				subMenu: []
+			},
+			{
+				key: 'appsProject.scrumBoard',
+				path: `${APP_PREFIX_PATH}/project/scrum-board`,
+				title: 'Board View',
+				translateKey: 'nav.appsProject.scrumBoard',
+				icon: '',
+				type: NAV_ITEM_TYPE_ITEM,
+				authority: [ADMIN, USER],
+				subMenu: []
+			},
+		]
 	},
 	{
 		key: 'appsSales.productList',
