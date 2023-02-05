@@ -28,7 +28,6 @@ class GetSubscriptionOptions(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             # Load user's details from DB
             # username = 'Tim' # request.session['username']
@@ -38,8 +37,6 @@ class GetSubscriptionOptions(APIView):
                 print(f'User {user.username} found!')
             else:
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
-
-            print('Requested subscription options:', request.data)
 
             # NOTE: Add a serializer here, very important for query safety
             page_index = request.data['pageIndex']
@@ -51,7 +48,6 @@ class GetSubscriptionOptions(APIView):
 
             cities = City.objects.exclude(name='None') # all cities
 
-            print('Query =', query)
             if query:
                 cities = (cities.filter(name__icontains=query) | cities.filter(country__icontains=query) | cities.filter(price__icontains=query)).distinct()
             # NOTE: put as search term in sorting
@@ -127,7 +123,6 @@ class UnsubscribeFromCity(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             queryset = User.objects.filter(username=username)
             if queryset.exists():
@@ -150,7 +145,6 @@ class UnsubscribeFromCity(APIView):
                     subscription_query = Subscription.objects.filter(city=city, user=user.profile)
                     if subscription_query.exists():
                         subscription = subscription_query[0]
-                        print(subscription)
 
                         response = stripe.Subscription.delete(
                             subscription.stripe_subscription_id, # CHECK THIS NOTATION
@@ -187,7 +181,6 @@ class AddCitytoBasket(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             queryset = User.objects.filter(username=username)
             if queryset.exists():
@@ -201,7 +194,6 @@ class AddCitytoBasket(APIView):
 
                 id = request.data['id']
                 city_name = request.data['name']
-                print(f'Add city {city_name} to basket, id is {id}')
                 city_query = City.objects.filter(name=city_name)
 
                 if city_query.exists():
@@ -238,7 +230,6 @@ class GetBasket(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             queryset = User.objects.filter(username=username)
             if queryset.exists():
@@ -277,7 +268,6 @@ class StripeCheckout(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             queryset = User.objects.filter(username=username)
             if queryset.exists():
@@ -357,7 +347,6 @@ def check_stripe_customer(user, payment_method_id):
 
 def create_stripe_subscription(customer, user, cities):
     for city in cities:
-        print(city)
         response = stripe.Subscription.create(
                 customer=customer,
                 items=[
@@ -402,7 +391,7 @@ def create_stripe_subscription(customer, user, cities):
 
 #         if key_query_set.exists():
 #             username = key_query_set[0].username
-#             print(key)
+#             
 
 #             queryset = User.objects.filter(username=username)
 #             if queryset.exists():

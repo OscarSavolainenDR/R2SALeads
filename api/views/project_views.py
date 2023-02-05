@@ -92,7 +92,6 @@ class DownloadExcel(APIView):
 
                 excel_path = f'excels/{city}.xlsx'
                 listing_sheet = f'Listing_{listing.excel_sheet}'
-                print(listing_sheet)
                 # breakpoint()
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
@@ -136,7 +135,6 @@ class GetTableLeads(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             # Load user's details from DB
             # username = 'Tim' # request.session['username']
@@ -149,7 +147,6 @@ class GetTableLeads(APIView):
 
 
             # NOTE: Add a serializer here, very important for query safety
-            print('Request leads table data:', request.data)
             page_index = request.data['pageIndex']
             page_size = request.data['pageSize']
             sort = request.data['sort']
@@ -161,7 +158,6 @@ class GetTableLeads(APIView):
             listings = user.profile.user_listings.all()
             total_listings_len = len(listings)
 
-            print('Query =', query)
             if query:
                 # import pdb; pdb.set_trace()
                 listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query)).distinct()
@@ -277,7 +273,6 @@ class GetScrumBoard(APIView):
 
         if key_query_set.exists():
             username = key_query_set[0].username
-            print(key)
 
             # Load user's details from DB
             # username = 'Tim' # request.session['username']
