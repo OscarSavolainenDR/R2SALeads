@@ -191,7 +191,10 @@ const TicketContent = ({onTicketClose}) => {
 		setTicketData( prevState => ({...prevState, ...{labels: labels}}))
 	}
 
+	const rent = ticketData.rent > 0
+
 	return (
+
 		<>
 			{
 				loading 
@@ -290,8 +293,8 @@ const TicketContent = ({onTicketClose}) => {
 							<TicketSection title="Description" icon={<HiOutlineClipboardList />}>
 								<div className="mt-2">
 									<p className="mt-2">{ticketData.description}</p>
-									<p className="mt-2">{ticketData.rent}</p>
-									<p className="mt-2">{ticketData.breakeven_occupancy}</p>
+									{ticketData.rent > 0 ? (<div> <p className="mt-2">{ticketData.rent}</p> <p className="mt-2">{ticketData.breakeven_occupancy}</p> </div>) : (<div></div>)}
+
 								</div>
 							</TicketSection>
 						)}

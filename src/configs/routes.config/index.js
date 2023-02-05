@@ -24,6 +24,15 @@ export const protectedRoutes = [
         }
     },
     {
+        key: 'appsProject.tableView',
+        path: `${APP_PREFIX_PATH}/project/table-view`,
+        component: React.lazy(() => import('views/project/ProductList')),
+        authority: [ADMIN, USER],
+        meta: {
+            pageContainerType: 'gutterless'
+        }
+    },
+    {
         key: 'appsSales.productList',
         path: `${APP_PREFIX_PATH}/subscribe/product-list`,
         component: React.lazy(() => import('views/subscribe/ProductList')),

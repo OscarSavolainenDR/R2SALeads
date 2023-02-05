@@ -7,6 +7,15 @@ export async function apiGetScrumBoards () {
     })
 }
 
+export async function apiUpdateLeadsListBackend (data) {
+    return ApiService.fetchData({
+        url: '/project/leads-list/update-backend',
+        method: 'post',
+        data // We send the updated ordering.
+    })
+}
+
+
 export async function apiUpdateBoardBackend (data) {
     return ApiService.fetchData({
         url: '/project/scrum-board/update-backend',

@@ -17,8 +17,18 @@ const navigationConfig = [
 	{
 		key: 'appsProject.scrumBoard',
 		path: `${APP_PREFIX_PATH}/project/scrum-board`,
-		title: 'Leads',
+		title: 'Leads - Board',
 		translateKey: 'nav.appsProject.scrumBoard',
+		icon: 'scrumBoard',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [ADMIN, USER],
+		subMenu: []
+	},
+	{
+		key: 'appsProject.tableView',
+		path: `${APP_PREFIX_PATH}/project/table-view`,
+		title: 'Leads - Table View',
+		translateKey: 'nav.appsProject.tableView',
 		icon: 'scrumBoard',
 		type: NAV_ITEM_TYPE_ITEM,
 		authority: [ADMIN, USER],
