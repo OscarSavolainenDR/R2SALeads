@@ -13,13 +13,16 @@ const Side = ({children, content, ...rest }) => {
 				<Logo mode="dark" />
 				<div >
 					<div className="mb-6 flex items-center gap-4">
-						<Avatar className="border-2 border-white" shape="circle" src="/img/avatars/thumb-10.jpg" />
-						<div className="text-white">
+						{/* <Avatar className="border-2 border-white" shape="circle" src="/img/avatars/thumb-10.jpg" /> */}
+						{/* <div className="text-white">
 							<div className="font-semibold text-base">Brittany Hale</div>
 							<span className="opacity-80">CTO, Onward</span>
-						</div>
+						</div> */}
 					</div>
-					<p className="text-lg text-white opacity-80">Elstar comes with a complete set of UI components crafted with Tailwind CSS, it fulfilled most of the use case to create modern and beautiful UI and application</p>
+					<h3 className="text-white mb-4">Find your next Rent to Serviced Accomodation property with R2SA Leads!</h3>
+					<p className="text-lg text-white opacity-80 max-w-[700px]">R2SA Leads automatically scans all of the major rental listing websites and compares the listings to data from Airbnb. We provide lists of properties that are suitable for R2SA with all of the due diligence already done! Spend less time searching for properties, and more time growing your business!</p>
+				
+					{/* <p className="text-lg text-white opacity-80">Elstar comes with a complete set of UI components crafted with Tailwind CSS, it fulfilled most of the use case to create modern and beautiful UI and application</p> */}
 				</div>
 				<span className="text-white">Copyright  &copy;  {`${new Date().getFullYear()}`} <span className="font-semibold">{`${APP_NAME}`}</span> </span>
 			</div>

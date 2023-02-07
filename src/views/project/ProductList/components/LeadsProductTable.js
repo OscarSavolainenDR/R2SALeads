@@ -85,19 +85,19 @@ const ActionColumn = ({row}) => {
 	
 }
 
-const ProductColumn = ({row}) => {
+// const ProductColumn = ({row}) => {
 	
-	const avatar = row.img ? <Avatar src={row.img} /> : <Avatar icon={<FiPackage />} />
+// 	const avatar = row.img ? <Avatar src={row.img} /> : <Avatar icon={<FiPackage />} />
 
-	return (
-		<div className="flex items-center">
-			{avatar}
-			<span className={`ml-2 rtl:mr-2 font-semibold`}>
-				{row.name}
-			</span>
-		</div>
-	)
-}
+// 	return (
+// 		<div className="flex items-center">
+// 			{avatar}
+// 			<span className={`ml-2 rtl:mr-2 font-semibold`}>
+// 				{row.name}
+// 			</span>
+// 		</div>
+// 	)
+// }
 
 const LeadsProductTable = () => {
 
@@ -181,17 +181,17 @@ const LeadsProductTable = () => {
 				)
 			},
 		},
-		{
-			Header: 'Postcode',
-			accessor: 'postcode',
-			sortable: true,
-			Cell: props => {
-				const row = props.row.original
-				return (
-					<span className="capitalize">{row.postcode}</span>
-				)
-			},
-		},
+		// {
+		// 	Header: 'Postcode',
+		// 	accessor: 'postcode',
+		// 	sortable: true,
+		// 	Cell: props => {
+		// 		const row = props.row.original
+		// 		return (
+		// 			<span className="capitalize">{row.postcode}</span>
+		// 		)
+		// 	},
+		// },
 		{
 			Header: 'Bedrooms',
 			accessor: 'bedrooms',
