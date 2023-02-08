@@ -76,10 +76,10 @@ class Profile(models.Model):
     user_listings = models.ManyToManyField('Listing',
                                      through='Authorised_Listings')
 
-
-    authorised_listings_leads = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
-    authorised_listings_contacted = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
-    authorised_listings_booked = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default) # Viewing booked
+    stripe_customer_id = models.CharField(max_length=30)
+    # authorised_listings_leads = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
+    # authorised_listings_contacted = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default)
+    # authorised_listings_booked = ArrayField( models.CharField(max_length=18, unique=True), default=get_list_default) # Viewing booked
     sign_up_date = models.DateField(auto_now_add=True)
 
     # Sign in authorisations
@@ -88,6 +88,8 @@ class Profile(models.Model):
     # email = models.EmailField(max_length=30, unique=True, blank=False)
     authorisations = ArrayField(models.CharField(max_length=20), default=get_list_default)
     # password = models.CharField(max_length=20, blank=False)
+
+    email_confirmed = models.BooleanField(default=False)
 
     # trial_week_start = models.DateField()
     # trial_city = models.ForeignKey(City, on_delete=models.CASCADE,
@@ -141,6 +143,12 @@ class Session(models.Model):
     username = models.CharField(max_length=30, unique=True)
 
 class ResetPassword(models.Model):
+    token = models.CharField(max_length=50, unique=True)
+    uid = models.CharField(max_length=10, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+
+class ConfirmEmail(models.Model):
     token = models.CharField(max_length=50, unique=True)
     uid = models.CharField(max_length=10, unique=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)

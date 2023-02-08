@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
 from ..serializers.auth_serializers import SignInSerializer, SignOutSerializer, SignUpSerializer #,ForgotPasswordSerializer
-from ..models import Listing, User, Notification, Attachment, Session, ResetPassword
+from ..models import Listing, User, Notification, Attachment, Session, ResetPassword, ConfirmEmail
 from rest_framework.views import APIView 
 from rest_framework.response import Response 
 from django.http import JsonResponse
@@ -14,10 +14,15 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
+import asyncio
 # from ...backend_v3.settings import BASE_DIR
 
 import os
+import stripe
+stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 # SESSION_KEY = os.getenv('SESSION_KEY')
+
+website_domain = os.getenv('WEBSITE_DOMAIN')
 
 class SignIn(APIView):
     serializer_class = SignInSerializer
@@ -51,8 +56,8 @@ class SignIn(APIView):
                             session.delete()
 
                 # Create new session (awkward way to do it)
-                print(self.request.session.session_key)
-                print(len(self.request.session.session_key))
+                # print(self.request.session.session_key)
+                # print(len(self.request.session.session_key))
                 new_session = Session(key=self.request.session.session_key, username=username)
                 new_session.save()
 
@@ -108,7 +113,6 @@ class SignUp(APIView):
 
         # Get the request data (logout details)
         serializer = self.serializer_class(data=request.data)
-        print(serializer)
         if serializer.is_valid(): # check if data in our post request is valid
 
             username = serializer.data.get('username')
@@ -119,27 +123,40 @@ class SignUp(APIView):
             if users_queryset.exists():
                 errors = [{'message': '', 'domain': "global", 'reason': "invalid"}]
                 packet = errors, {'message': 'User already exists!'}
-                print('USer already exists')
+                print('User already exists')
                 return Response(json.dumps(packet), status=status.HTTP_400_BAD_REQUEST)
             
             email_queryset = User.objects.filter(email=given_email)
             if email_queryset.exists():
-                errors = [{'message': '', 'domain': "global", 'reason': "invalid"}]
-                packet = errors, {'message': 'Email already in use!'}
+                # errors = [{'message': '', 'domain': "global", 'reason': "invalid"}]
+                # packet = errors, {'message': 'Email already in use!'}
                 print('Email already exists')
-                print(json.dumps(packet))
-                return Response(json.dumps(packet), status=status.HTTP_400_BAD_REQUEST)
+                # print(json.dumps(packet))
+                return Response({'message': 'Email already in use!'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Send stripe a message to create customer.import stripe
+            stripe_response = stripe.Customer.create(
+                email = given_email,
+                name = username
+            )
 
             new_user = User(username=username,
                             password=given_password,
                             email = given_email,
                             )
             new_user.save()
-            new_user.profile.authorisations = ['user'],
-            new_user.profile.authorised_listings_leads = [],
-            new_user.profile.authorised_listings_contacted = [],
-            new_user.profile.authorised_listings_booked = [],
+            # new_user.profile.authorisations = ['user'],
+            new_user.profile.stripe_customer_id = stripe_response.id
+            new_user.save()
+            # new_user.profile.authorised_listings_leads = [],
+            # new_user.profile.authorised_listings_contacted = [],
+            # new_user.profile.authorised_listings_booked = [],
             # new_user.set_cities()
+
+
+
+            # NOTE: Send email confirmation to them.
+            send_email_confirmation(new_user)
 
             packet = {
                 'username': username,
@@ -157,8 +174,8 @@ class SignUp(APIView):
             return Response(packet, status=status.HTTP_200_OK) # Send the logout details to frontend
         else:
             print('Sign Up didnt pass serializer')
-            return Response({'Bad Request': 'Logout request not valid.'}, status=status.HTTP_400_BAD_REQUEST)
-         
+            return Response({'message': 'Email or username already in use.'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ForgotPassword(APIView):
     # serializer_class = ForgotPasswordSerializer
@@ -197,25 +214,28 @@ class ForgotPassword(APIView):
                 subject = "Password Reset Requested"
                 email_template_name = "email_templates/password_reset_email.txt"
                 c = {
-                "email":user.email,
-                'domain':'127.0.0.1:3000', 
-                'site_name': 'Website',
-                "uid": uid,
-                "user": user,
-                'token': token,
-                'protocol': 'http',
+                    "email":user.email,
+                    'domain':website_domain,
+                    'site_name': 'Website',
+                    "uid": uid,
+                    "user": user,
+                    'token': token,
+                    'protocol': 'http',
                 }
                 email = render_to_string(email_template_name, c)
                 try:  
-                    send_mail(subject, email, 'oscar@sav-estates.co.uk' , [user.email], fail_silently=False)
+                    print('Sent reset email successfully')
+                    send_mail(subject, email, 'contact@r2sa-leads.co.uk' , [user.email], fail_silently=False)
                     return Response(status=status.HTTP_200_OK)
-                except BadHeaderError:
-                    print('What')
-                    return Response({'msg':'Invalid header found.'}, status=status.HTTP_400_BAD_REQUEST)
+                except Exception as e:
+                    print(e)
+                    reset_password = ResetPassword.objects.filter(token=token, uid=uid, user=user)
+                    reset_password[0].delete()
+                    # NOTE: maybe change 400 to 200
+                    return Response({'msg':'Sending email failed.'}, status=status.HTTP_400_BAD_REQUEST)
 
-                # return Response({'msg': 'Incorrect password.'}, status=status.HTTP_401_UNAUTHORIZED)
-            # print('OOh rah')
             # All is well, don't let hackers know email isn't vlaid
+            print("user doesn't exist")
             return Response(status=status.HTTP_200_OK)
         # return Response({'msg': 'Session data not valid.'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -226,7 +246,7 @@ class ResetPasswordView(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
 
-        print(request.data)
+        # print(request.data)
         uid = request.data['uid']
         token = request.data['token']
         new_password = request.data['password'] 
@@ -256,23 +276,88 @@ class ResetPasswordView(APIView):
             return Response(status=status.HTTP_200_OK)
         return Response({'message': 'Stale forgotten password token, request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
 
-# from django.shortcuts import redirect   
-# def ResetPassword(request):
-#     print('Stuff')
-#     response = redirect('/reset-password/')
-#     return response
-# export async function apiForgotPassword (data) {
-#     return ApiService.fetchData({
-#         url: '/forgot-password',
-#         method: 'post',
-#         data
-#     })
-# }
 
-# export async function apiResetPassword (data) {
-#     return ApiService.fetchData({
-#         url: '/reset-password',
-#         method: 'post',
-#         data
-#     })
-# } 
+class ConfirmEmail_api(APIView):
+    def post(self, request, format=None):
+        print(request.data)
+        uid = request.data['uid']
+        token = request.data['token']
+
+        query_set = ConfirmEmail.objects.filter(uid=uid, token=token)
+        if query_set.exists():
+            confirm_email = query_set[0] 
+
+            # from datetime import date, timedelta
+            # print('Given:', confirm_email.date, '; Expires:', (date.today() + timedelta(days=1)))
+            # if date.today() > (reset_password.date + timedelta(days=1)):
+            #     print('Old')
+            #     return Response({'message': 'Stale forgotten password token, request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            user = confirm_email.user
+
+            try:
+                user.profile.email_confirmed = True
+                user.save()
+                print('Email confirmed')
+            except:
+                print('Email update failed')
+                return Response({'message': 'Email not confirmed'}, status=status.HTTP_400_BAD_REQUEST)
+
+            confirm_email.delete()
+            return Response(status=status.HTTP_200_OK)
+        print('queryset does not exist')
+        return Response({'message': 'Stale forgotten password token, request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class GetEmailStatus(APIView):
+    def post(self, request, format=None):
+        key = request.headers['Authorization'].split(' ')[1]
+        # Have a Serializer HERE!
+        key_query_set = Session.objects.filter(key=key)
+
+        if key_query_set.exists():
+            username = key_query_set[0].username
+
+            # Load user's details from DB
+            queryset = User.objects.filter(username=username)
+            if queryset.exists():
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+
+            email_status = user.profile.email_confirmed
+            return Response({'email_status': email_status}, status=status.HTTP_200_OK)
+
+
+def send_email_confirmation(user):
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    # If token has already been used
+    email_confirm = ConfirmEmail(token=token, uid=uid, user=user)
+    # breakpoint()
+    email_confirm.save()
+
+    # SEND EMAIL WITH VERIFICATION CODE
+    subject = "Confirm Email - R2SA Leads"
+    email_template_name = "email_templates/confirm_email.txt"
+    c = {
+        "email": user.email,
+        'domain': website_domain, 
+        'site_name': 'Website',
+        "uid": uid,
+        "user": user,
+        'token': token,
+        'protocol': 'http',
+    }
+    email = render_to_string(email_template_name, c)
+    try:   
+        send_mail(subject, email, 'contact@r2sa-leads.co.uk' , [user.email], fail_silently=False)
+        print(f"Email sent successfully for user {user.email}")
+    except Exception as e:
+        print(e)
+        print('Sending confirmation email failed')
+        user.delete()
+        
+
+

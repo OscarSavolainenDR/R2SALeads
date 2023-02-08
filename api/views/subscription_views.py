@@ -1,8 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from rest_framework import generics, status
 from ..serializers.subscription_serializers import ReturnBasketSerializer, SubscriptionSerializer,  UnsubscribeSerializer, AddToBasketSerializer, GetBasketSerializer,CheckoutBasketSerializer
 from ..serializers.auth_serializers import SessionSerializer
-from ..models import Listing, User, Notification, Attachment, Session, City, Subscription
+from ..models import Listing, User, Notification, Attachment, Session, City, Subscription, Authorised_Listings
 from rest_framework.views import APIView 
 from rest_framework.response import Response 
 from django.http import JsonResponse
@@ -146,14 +146,29 @@ class UnsubscribeFromCity(APIView):
                     if subscription_query.exists():
                         subscription = subscription_query[0]
 
-                        response = stripe.Subscription.delete(
-                            subscription.stripe_subscription_id, # CHECK THIS NOTATION
-                        )
+                        try:
+                            response = stripe.SubscriptionItem.delete(
+                                subscription.stripe_subscription_id,
+                            )
+                        except Exception as e:
+                            response = stripe.SubscriptionItem.retrieve(
+                                subscription.stripe_subscription_id,
+                            )
+                            response = stripe.Subscription.delete(
+                                response.subscription,
+                            )
+                            
                         # breakpoint()
                         user.profile.cities.remove(city)
 
+
+                        # user_listings = user.profile.user_listings.all()
+                        user_listings = Authorised_Listings.objects.filter(listing__city=city, user=user.profile)
+                        # print('User Listings check:', user_listings)
+                        user_listings.delete()
+
                     # If city merely in checkout basket
-                    if user.profile.cities_basket.filter(name=city.name).exists():
+                    if user.profile.cities_basket.filter(name=city.name).exists(): 
                         user.profile.cities_basket.remove(city)
                     user.profile.save()
 
@@ -259,7 +274,91 @@ class GetBasket(APIView):
 
             return Response(response_data, status=status.HTTP_200_OK)
         return Response({'msg': 'Session data not valid.'}, status=status.HTTP_401_UNAUTHORIZED)
-         
+
+class CheckoutBasket(APIView):
+    serializer_class = CheckoutBasketSerializer
+    # lookup_url_kwarg = 'code' # when we call this instance, we need to give a keyword arguement
+
+    # Define a get request: frontend asks for stuff
+    def post(self, request, format=None):
+
+        key = request.headers['Authorization'].split(' ')[1]
+        key_query_set = Session.objects.filter(key=key)
+
+        if key_query_set.exists():
+            username = key_query_set[0].username
+
+            queryset = User.objects.filter(username=username)
+            if queryset.exists():
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+
+
+            cities = user.profile.cities_basket.exclude(name='None') # all cities in basket
+            items = []
+            for city in cities:
+                # print(city)
+                items.append(
+                    {
+                       "price": city.stripe_subscription_code,
+                       "quantity": 1,
+                    }
+                )
+
+            return Response(json.dumps({'items': items, 'email': user.email}), status=status.HTTP_200_OK)
+        return Response({'msg': 'Session data not valid.'}, status=status.HTTP_401_UNAUTHORIZED)
+
+class CreateStripePaymentIntent(APIView):
+
+    def post(self, request, format=None):
+
+        key = request.headers['Authorization'].split(' ')[1]
+        key_query_set = Session.objects.filter(key=key)
+
+        if key_query_set.exists():
+            username = key_query_set[0].username
+
+            queryset = User.objects.filter(username=username)
+            if queryset.exists():
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+
+
+        cities = user.profile.cities_basket.exclude(name='None')
+
+        subTotal = 0
+        line_items = []
+        for city in cities:
+            # print(city)
+            subTotal += city.price
+            line_items.append(
+                    {
+                    'price': city.stripe_subscription_code,
+                    # For metered billing, do not pass quantity
+                    'quantity': 1
+                }
+            )
+        tax = 0
+        total = subTotal + tax
+
+        session = stripe.checkout.Session.create(
+            success_url='https://example.com/success.html?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url='https://example.com/canceled.html',
+            mode='subscription',
+            line_items = line_items,
+        )  
+
+        print(session.url)
+
+        # Redirect to the URL returned on the session
+        return Response({'url': session.url}, status=status.HTTP_200_OK)
+
+        # return redirect(session.url, code=303)
+
 class StripeCheckout(APIView):
     def post(self, request, format=None):
 
@@ -282,6 +381,9 @@ class StripeCheckout(APIView):
             # email = data['email']
             payment_method_id = data['payment_method_id']
             basket = data['product']
+
+            if user.profile.email_confirmed == False:
+                return Response({'message': f'Email {user.email} has not been confirmed.'}, status=status.HTTP_401_UNAUTHORIZED)
 
             customer = check_stripe_customer(user, payment_method_id)
 
@@ -321,7 +423,7 @@ class StripeCheckout(APIView):
 
             # print(test_payment_intent)
             return Response( 
-                data={'customer_id': customer.id, 'message': 'Yup, potential error message'},
+                data={'customer_id': customer.id},
                 status=status.HTTP_200_OK
             )
 
@@ -342,11 +444,13 @@ def check_stripe_customer(user, payment_method_id):
                 'default_payment_method': payment_method_id
             }
         )
+        user.profile.stripe_customer_id = customer.id
     return customer
 
 
 def create_stripe_subscription(customer, user, cities):
     for city in cities:
+        response = []
         response = stripe.Subscription.create(
                 customer=customer,
                 items=[

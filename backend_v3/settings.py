@@ -18,6 +18,7 @@ environ.Env.read_env()
 
 # Your secret key
 SECRET_KEY = env("SECRET_KEY")
+MAILTRAP_KEY = env("MAILTRAP_KEY") 
 
 
 
@@ -118,7 +119,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Test
+# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
+# EMAIL_HOST_USER = '80e3ef71370383'
+# EMAIL_HOST_PASSWORD = 'f08cbdc4c29b6c'
+# EMAIL_PORT = '2525'
+
+#Live
+EMAIL_HOST = 'live.smtp.mailtrap.io'
+EMAIL_HOST_USER = 'api'
+EMAIL_USE_TLS = True
+EMAIL_HOST_PASSWORD = MAILTRAP_KEY
+EMAIL_PORT = '587'
+DEFAULT_FROM_EMAIL = 'contact@r2sa-leads.co.uk'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -148,7 +161,7 @@ CORS_ORIGIN_WHITELIST = [
     'https://r2sa-leads.co.uk',
     'https://www.r2sa-leads.co.uk',
     'http://r2sa-leads.co.uk',
-    'https://r2sa-leads.com'
+    'https://r2sa-leads.com',
     'https://www.r2sa-leads.com']
 
 # May need to replace with django_on_heroku, maintained package
@@ -156,7 +169,7 @@ import django_heroku
 django_heroku.settings(locals())
 
 
-if os.getcwd() == '/api':
+if os.getcwd() == '/app':
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
     DEBUG = False

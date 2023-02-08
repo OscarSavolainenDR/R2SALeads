@@ -1,0 +1,16 @@
+{% autoescape off %}
+Hello,
+
+Please click the link below to confirm your email for your account at r2sa-leads.co.uk!
+
+{{ protocol }}://{{ domain }}/confirm-email/{{ uid }}/{{ token }}
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser
+window instead.
+
+If you did not sign up for an account at r2sa-leads.co.uk, you can simply ignore this email.
+ 
+Sincerely,
+Rent 2 SA Leads
+
+{% endautoescape %}

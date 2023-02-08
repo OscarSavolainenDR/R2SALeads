@@ -200,11 +200,14 @@ class GetTableLeads(APIView):
             # Iterate through listings, return only what is needed
             sent_listings = []
             for listing in page_listings:
+                if  listing.profit < 500:
+                    continue
                 l = {
                         'city': listing.city.name,
                         'country': listing.city.country,
                         'postcode': listing.postcode,
                         'bedrooms': listing.bedrooms,
+                        'breakeven': listing.breakeven_occupancy,
                         'rent': listing.rent,
                         'expected_income': listing.expected_income,
                         'profit': listing.profit,
@@ -229,6 +232,7 @@ class GetTableLeads(APIView):
                         'country': 'to a City',
                         'postcode': '',
                         'bedrooms': 0,
+                        'breakeven' : 0,
                         'rent': 0,
                         'expected_income': 0,
                         'profit': 0,

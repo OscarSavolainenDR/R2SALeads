@@ -16,12 +16,8 @@ import numpy as np
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
-cities = dict(
-    London = dict(name='London', country ='England', price=200, stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ'),
-    Belfast = dict(name='Belfast', country ='Ireland', price=50, stripe_subscription_code='price_1MTAF7JeYWzBWqCqabe0l1wi'),
-    Dublin = dict(name='Dublin', country='Ireland', price=50, stripe_subscription_code='price_1MTAETJeYWzBWqCqN7QY44Et'),
-    Bristol = dict(name='Bristol', country='England', price=50, stripe_subscription_code='price_1MVZsfJeYWzBWqCq2tnfHyMu'),
-)
+from .cities import test_cities as cities
+
 
 ## Just for filling the DB with dummy data, can be adapted later for actually updating the DB.
 class InitDB(APIView):
@@ -32,6 +28,9 @@ class InitDB(APIView):
         # NOTE: Add authorisation here, only if code is accepted.
 
         for city in cities:
+            if type(city) is tuple:
+                city = city[0]
+
             if not City.objects.filter(name=city['name']).exists():
                 city_elem = City(name=city['name'], country=city['country'], price=city['price'], stripe_subscription_code=city['stripe_subscription_code'])
                 city_elem.save()
@@ -39,6 +38,13 @@ class InitDB(APIView):
         if not User.objects.filter(username='admin').exists():
             admin = User(username='admin', password='abc',
                 email = 'admin@hotmail.com')
+            admin.save()
+            stripe_response = stripe.Customer.create(
+                email = admin.email,
+                name = admin.username
+            )
+            # admin.profile.authorisations = ['user'],
+            admin.profile.stripe_customer_id = stripe_response.id
             admin.save()
 
         # Notifications
@@ -52,9 +58,10 @@ class InitDB(APIView):
             
         return Response(status=status.HTTP_200_OK)
   
-
+from django.views.decorators.csrf import csrf_exempt
 class UpdateListings(APIView):
     today = date.today()
+    @csrf_exempt
     def post(self, request, format=None):
 
         # Make sure only requests with the code get through
@@ -63,9 +70,12 @@ class UpdateListings(APIView):
             
         # load_and_store_new_listings('London')
         for city in cities:
+            if type(city) is tuple:
+                city = city[0]
             load_and_store_new_listings(city['name'], self.today)
 
         # Add new listings to Users
+        print('Adding new listings to users')
         for listing in Listing.objects.filter():
             # Runs once a day, should catch all new ones.
             # Although more robust to go through all listings
@@ -88,9 +98,12 @@ class UpdateListings(APIView):
 
 def load_and_store_new_listings(city, today):
     # Load new listings
-    with open('json_data_' + city + '.json') as json_file:
-        all_listings = json.load(json_file)
-        # print(all_listings[0])
+    try:
+        with open('json_data_' + city + '.json') as json_file:
+            all_listings = json.load(json_file)
+    except:
+        print(city, 'failed')
+        return
 
     # If existing listing is expired, delete. 
     # If recently expired, mark it as expired
@@ -135,6 +148,9 @@ def load_and_store_new_listings(city, today):
         bedrooms = listing['bedrooms']
         expenses = listing['rent'] * 1.3
         profit = int(listing['median_income'] - expenses)
+        if profit < 500:
+            continue
+
         breakeven_occupancy = int(expenses / listing['median_income'] * 100)
         round_profit = np.floor(profit / 1000 )  # profit in 1000's
         
@@ -145,7 +161,7 @@ def load_and_store_new_listings(city, today):
             labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
 
         
-        # print( f"Postcode: {listing['postcode']} - £{profit}/month")
+        print( f"Postcode: {listing['postcode']} - £{profit}/month")
         
         l = Listing(
                 city = city,
