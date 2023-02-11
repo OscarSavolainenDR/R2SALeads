@@ -24,7 +24,9 @@ const Home = () => {
 				<br />
 				<br />
 				
-				We make finding R2SA Leads easy. Get started by going to Manage Lead Subscriptions, and signing up for a <span style={{ fontWeight: 'bold' }}>free one week trial for your city of choice!</span>
+				We make finding R2SA Leads easy. Get started by going to Manage Lead Subscriptions, and signing up for your city of choice! 
+				<br />
+				If you want to check out what the leads look like, go to Leads and see what's looking good in Oxford &#40;we give Leads there for free so you can see what the service is like&#41;.
 			</span>
 		</div>
 	)

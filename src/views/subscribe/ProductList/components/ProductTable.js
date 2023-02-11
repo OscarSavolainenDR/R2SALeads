@@ -124,19 +124,19 @@ const ActionColumn = ({status, row}) => {
 	}
 }
 
-const ProductColumn = ({row}) => {
+// const ProductColumn = ({row}) => {
 	
-	const avatar = row.img ? <Avatar src={row.img} /> : <Avatar icon={<FiPackage />} />
+// 	const avatar = row.img ? <Avatar src={row.img} /> : <Avatar icon={<FiPackage />} />
 
-	return (
-		<div className="flex items-center">
-			{avatar}
-			<span className={`ml-2 rtl:mr-2 font-semibold`}>
-				{row.name}
-			</span>
-		</div>
-	)
-}
+// 	return (
+// 		<div className="flex items-center">
+// 			{avatar}
+// 			<span className={`ml-2 rtl:mr-2 font-semibold`}>
+// 				{row.name}
+// 			</span>
+// 		</div>
+// 	)
+// }
 
 const ProductTable = () => {
 
@@ -166,7 +166,10 @@ const ProductTable = () => {
 			sortable: true,
 			Cell: props => {
 				const row = props.row.original
-				return <ProductColumn row={row} />
+				// return <ProductColumn row={row} />
+				return (
+					<span className="capitalize">{row.name}</span>
+				)
 			},
 		},
 		{
