@@ -39,3 +39,10 @@ export async function apiResetPassword (data) {
         data,
     })
 }
+
+export async function apiGetEmailStatus () {
+    return ApiService.fetchData({
+        url: '/get-email-status',
+        method: 'post',
+    })
+}

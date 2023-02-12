@@ -42,6 +42,8 @@ const ActionColumn = ({row}) => {
 	// const basket = useSelector((state) => state.salesProductList.data.checkoutBasket)
 	const data = useSelector((state) => state.projectTableView.data.productList)
 	const tableData = useSelector((state) => state.projectTableView.data.tableData)
+	
+	
 	// const selectedProduct = useSelector((state) => state.salesProductList.state.selectedProduct)
 	// const { status } = props.row.original
 
@@ -240,6 +242,17 @@ const LeadsProductTable = () => {
 				const { rent } = props.row.original
 				return (
 					<span>£{rent}</span>
+				)
+			},
+		},
+		{
+			Header: 'Breakeven Ocucpancy',
+			accessor: 'breakeven_occupancy',
+			sortable: true,
+			Cell: props => {
+				const { breakeven } = props.row.original
+				return (
+					<span>{breakeven}%</span>
 				)
 			},
 		},

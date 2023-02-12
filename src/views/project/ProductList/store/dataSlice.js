@@ -11,16 +11,6 @@ export const getLeads = createAsyncThunk('projectTableView/data/getLeads', async
     return response.data
 })
 
-// Model
-// export const getProducts = createAsyncThunk('salesProductList/data/getProducts',async (data) => {
-//     const response = await apiGetSalesProducts(data)
-//     return response.data
-// })
-
-// export const updateLeadsListBackend = createAsyncThunk('projectTableView/data/updateLeadsListBackend', async (data) => {
-//     const response = await apiUpdateLeadsListBackend(data)
-//     return response.status
-// })
 
 export const updateLeadsListBackend = async (data) => {
     const response = await apiUpdateLeadsListBackend(data)
@@ -62,7 +52,7 @@ export const initialFilterData = {
     status: [0, 1, 2], // subscribed, in basket or not subscribed
     productStatus: 0,
 }
-
+// state.projectTableView.data.productList)
 const dataSlice = createSlice({
     name: 'projectTableView/data',
     initialState: {

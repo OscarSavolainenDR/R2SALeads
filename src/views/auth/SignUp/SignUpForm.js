@@ -38,10 +38,10 @@ const SignUpForm = props => {
 			{message && <Alert className="mb-4" type="danger" showIcon>{message}</Alert>}
 			<Formik
 				initialValues={{
-					username: 'admin1', 
-					password: '123Qwe1', 
-					confirmPassword: '123Qwe1',
-					email: 'test@testmail.com' 
+					username: '', 
+					password: '', 
+					confirmPassword: '',
+					email: '' 
 				}}
 				validationSchema={validationSchema}
 				onSubmit={(values, { setSubmitting }) => {

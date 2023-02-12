@@ -1,6 +1,9 @@
 import React from 'react'
 
 const Home = () => {
+
+
+
 	return (
 		<div>
 			<h3>Welcome to Rent 2 SA Leads!</h3>
