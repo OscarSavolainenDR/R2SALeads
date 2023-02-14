@@ -2,11 +2,57 @@ import React from 'react'
 import { Button } from 'components/ui'
 import { HiDownload, HiShoppingCart } from 'react-icons/hi'
 import ProductTableSearch from './ProductTableSearch'
+import { checkout } from '../store/dataSlice'
 // import ProductFilter from './ProductFilter'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { loadStripe } from "@stripe/stripe-js"
+
+
+let stripePromise
+const getStripe = () => {
+    if (!stripePromise) {
+        stripePromise = loadStripe(process.env.REACT_APP_STRIPE_KEY) // need
+    }
+    return stripePromise
+}
+
 
 const ProductTableTools = () => {
+
+	
+
+
+	// const navigate = useNavigate()
+	// Make API call to backend, which returns url to redirect to
+	const onCheckout = async () => {
+		const response = await checkout({data: data})
+
+
+
+		const lineItems = JSON.parse(response.data)
+
+		console.log(lineItems)
+	
+		const checkoutOptions = {
+			lineItems: lineItems,
+			mode: "subscription",
+			successUrl: `${window.location.origin}/success`,
+			cancelUrl: `${window.location.origin}/cancel`,
+	
+		}
+
+		// console.log(response)
+
+		if (response.status) {
+			console.log('redirect to checkout')
+
+			const stripe = await getStripe()
+			const { error } = await stripe.redirectToCheckout(checkoutOptions)
+			console.log("Stripe checkout error", error)
+		}
+	}
 
 	// Get number of elements in checkout basket
 	const data = useSelector((state) => state.salesProductList.data.productList)
@@ -34,19 +80,20 @@ const ProductTableTools = () => {
 						Export
 					</Button>
 				</Link> */}
-				<Link 
+				{/* <Link 
 					className="block lg:inline-block md:mb-0 mb-4"
 					 to="/app/subscribe/checkout-basket" 
-				>
+				> */}
 					<Button
 						block
 						variant="solid"
 						size="sm" 
+						onClick={onCheckout}
 						icon={<HiShoppingCart />}
 					>
 						Checkout
 					</Button>
-				</Link>
+				{/* </Link> */}
 			</div>
 		)
 	} else {

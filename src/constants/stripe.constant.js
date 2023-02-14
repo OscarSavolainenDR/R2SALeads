@@ -1,1 +1,1 @@
-export const PUBLIC_STRIPE_KEY = 'pk_test_51MT7HCJeYWzBWqCqeMAbPUHyyo7saSqqkQy8ZycQkaKxGXqrMjMiuP7KI5IBN8Q8fJXazSlK7f0RA8h1nnaPSqzB00l9MTy5Ia'
+export const PUBLIC_STRIPE_KEY = process.env.REACT_APP_STRIPE_KEY

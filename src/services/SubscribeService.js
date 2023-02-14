@@ -24,6 +24,14 @@ export async function apiAddCityToBasket (data) {
     })
 }
 
+export async function apiCheckout (data) {
+    return ApiService.fetchData({
+        url: '/subscriptions/checkout',
+        method: 'post',
+        data,
+    })
+}
+
 export async function apiGetCheckoutBasket () {
     return ApiService.fetchData({
         url: '/subscriptions/get-basket',

@@ -46,3 +46,15 @@ export async function apiGetEmailStatus () {
         method: 'post',
     })
 }
+
+
+// We send this from the page the user is directed to from their email, we
+// feed the token and uid back to the backend to confirm the email.
+export async function apiConfirmEmail (data) {
+    return ApiService.fetchData({
+        url: '/confirm-email',
+        method: 'post',
+        data
+    })
+}
+
