@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Number of times to run the command
-num_iterations=1
+num_iterations=10
 
 for ((i = 1; i <= num_iterations; i++)); do
     # Check if the file exists before removing it

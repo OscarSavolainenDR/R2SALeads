@@ -6,10 +6,10 @@ import store, { persistor } from './store'
 import Theme from 'components/template/Theme'
 import Layout from 'components/layout'
 import history from './history'
-import mockServer from './mock'
+// import mockServer from './mock'
 import appConfig from 'configs/app.config'
 import './locales'
-import { loadStripe } from "@stripe/stripe-js" // lets stripe track user behavior on website, helps detect credit card fraud
+// import { loadStripe } from "@stripe/stripe-js" // lets stripe track user behavior on website, helps detect credit card fraud
 
 const environment = process.env.NODE_ENV
 

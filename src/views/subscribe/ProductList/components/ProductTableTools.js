@@ -28,19 +28,17 @@ const ProductTableTools = () => {
 	// Make API call to backend, which returns url to redirect to
 	const onCheckout = async () => {
 		const response = await checkout({data: data})
+		const resp = JSON.parse(response.data)
+		// console.log(resp)
+		const lineItems = resp.items
+		const email = resp.email
 
-
-
-		const lineItems = JSON.parse(response.data)
-
-		console.log(lineItems)
-	
 		const checkoutOptions = {
 			lineItems: lineItems,
 			mode: "subscription",
-			successUrl: `${window.location.origin}/success`,
-			cancelUrl: `${window.location.origin}/cancel`,
-	
+			successUrl: `${window.location.origin}/app/subscribe/product-list`,
+			cancelUrl: `${window.location.origin}/app/subscribe/product-list`,
+			customerEmail: email,
 		}
 
 		// console.log(response)
@@ -48,11 +46,13 @@ const ProductTableTools = () => {
 		if (response.status) {
 			console.log('redirect to checkout')
 
+			// Set Loading to true
+
 			const stripe = await getStripe()
 			const { error } = await stripe.redirectToCheckout(checkoutOptions)
 			console.log("Stripe checkout error", error)
 		}
-	}
+	} 
 
 	// Get number of elements in checkout basket
 	const data = useSelector((state) => state.salesProductList.data.productList)
