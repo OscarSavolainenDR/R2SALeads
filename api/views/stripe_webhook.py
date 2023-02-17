@@ -11,12 +11,15 @@ webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
 # Using Django
 @csrf_exempt
 def stripe_webhook(request):
+        
+    print('stripe webhook called')
 
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
 
     # breakpoint()
+
 
     try:
         # event = stripe.Event.construct_from(
