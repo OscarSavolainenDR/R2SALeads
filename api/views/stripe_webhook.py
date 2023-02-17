@@ -29,6 +29,8 @@ def stripe_webhook(request):
         # Invalid payload
         return HttpResponse(status=400)
 
+    print(event)
+
     # Handle the event
     if event.type == 'payment_intent.succeeded':
         payment_intent = event.data.object # contains a stripe.PaymentIntent

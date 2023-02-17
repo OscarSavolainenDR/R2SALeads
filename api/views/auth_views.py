@@ -279,7 +279,7 @@ class ResetPasswordView(APIView):
 
 class ConfirmEmail_api(APIView):
     def post(self, request, format=None):
-        print(request.data)
+        # print(request.data)
         uid = request.data['uid']
         token = request.data['token']
 
