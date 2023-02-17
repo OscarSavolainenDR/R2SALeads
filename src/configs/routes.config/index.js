@@ -66,5 +66,15 @@ export const protectedRoutes = [
             headerContainer: true
         }
     },
+    {
+        key: 'appsGen.feedback',
+        path: `${APP_PREFIX_PATH}/feedback`,
+        component: React.lazy(() => import('views/feedback')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Feedback',
+            headerContainer: true
+        }
+    },
 
 ]

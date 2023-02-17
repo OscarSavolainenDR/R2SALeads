@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button } from 'components/ui'
 import { HiDownload, HiShoppingCart } from 'react-icons/hi'
 import ProductTableSearch from './ProductTableSearch'
@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { loadStripe } from "@stripe/stripe-js"
+import { apiGetEmailStatus } from 'services/AuthService'
 
 
 let stripePromise
@@ -20,6 +21,19 @@ const getStripe = () => {
 
 
 const ProductTableTools = () => {
+
+	const [confirmed, setConfirmed] = useState(false);
+
+	useEffect(() => {
+		
+		const fetchData = async () =>
+		{
+			const response = await apiGetEmailStatus()
+			// console.log('Email confirmed', response.data.email_status)
+			setConfirmed(response.data.email_status)
+		}
+		fetchData();
+	  });
 
 	
 
@@ -58,7 +72,8 @@ const ProductTableTools = () => {
 	const data = useSelector((state) => state.salesProductList.data.productList)
 	const sum_checkout_basket = data.reduce((prev,next) => prev + (next.status == 1),0);
 
-	if (sum_checkout_basket > 0) {
+		//  && (confirmed)
+	if ((sum_checkout_basket > 0)) {
 		return (
 			<div className="flex flex-col lg:flex-row lg:items-center">
 				<div style={{marginRight: '10px'}}>

@@ -67,6 +67,16 @@ const navigationConfig = [
 		authority: [ADMIN, USER],
 		subMenu: []
 	},
+	{
+		key: 'appsGen.feedback',
+		path: `${APP_PREFIX_PATH}/feedback`,
+		title: 'Feedback',
+		translateKey: 'nav.appsGen.feedback',
+		icon: 'feedback',
+		type: NAV_ITEM_TYPE_ITEM,
+		authority: [ADMIN, USER],
+		subMenu: []
+	},
 	// {
 	// 	key: 'appsAccount.settings',
 	// 	path: `${APP_PREFIX_PATH}/account/settings/profile`,

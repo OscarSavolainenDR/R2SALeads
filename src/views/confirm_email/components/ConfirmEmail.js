@@ -1,31 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import { Alert } from 'components/ui'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { getLeads } from '../store/dataSlice'
-// import { useSelector, useDispatch } from 'react-redux'
-// import { getEmailStatus } from '../store/dataSlice'
 import { apiGetEmailStatus } from 'services/AuthService'
 
 
 const ConfirmEmail = () => {
 
 	const [confirmed, setConfirmed] = useState(true);
-
-	// const dispatch = useDispatch()
-	// dispatch(getLeads())
-	// // const confirmed = useSelector((state) => state.confirmedEmail.data)
-	// const confirmed = useSelector((state) => state.projectTableView2.data.productList)
-	// // const confirmed = false
-	// console.log('In element', confirmed)
-
-	// useEffect( () => {
-	// 	console.log('Called')
-	// 	const status = await getEmailStatus()
-	// 	console.log(status)
-	// 	if (status) {
-	// 		setConfirmed(true)
-	// 	}
-	// }, [])
 
 	useEffect(() => {
 		
@@ -38,7 +18,7 @@ const ConfirmEmail = () => {
 		fetchData();
 	  });
 
-	const message = "To subscribe to a city to receive leads, you must confirm your email. \
+	const message = "To subscribe to a city and checkout to receive leads, you must confirm your email. \
 	To confirm your email, please go to your signup email's inbox (check spam folder)."
 
 	// const getStatus = async () => {

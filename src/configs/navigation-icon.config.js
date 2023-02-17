@@ -1,9 +1,8 @@
 import React from 'react'
 import {
-    HiOutlineColorSwatch, 
     HiOutlineHome,
 	HiOutlineClipboardList,
-    HiOutlineTable,
+    HiOutlineMail,
     HiUser,
     HiOutlineBookOpen,
 } from 'react-icons/hi'
@@ -13,6 +12,7 @@ const navigationIcon = {
     scrumBoard: <HiOutlineClipboardList />,
     subscriptions: <HiOutlineBookOpen />,
     account: <HiUser />,
+    feedback: <HiOutlineMail />,
 }
 
 export default navigationIcon
