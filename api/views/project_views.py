@@ -166,7 +166,7 @@ class GetTableLeads(APIView):
 
             if query:
                 # import pdb; pdb.set_trace()
-                listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query)).distinct()
+                listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query) | listings.filter(url__icontains=query)).distinct()
 
             # NOTE: put as search term in sorting
             print(f'We have {len(listings)} listings')
