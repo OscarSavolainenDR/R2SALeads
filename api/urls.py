@@ -2,7 +2,7 @@
 from django.urls import path
 from .views.setup_views import InitDB, UpdateListings
 from .views.project_views import GetScrumBoard, GetScrumBoardMembers, UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
-from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
+from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResendConfirmEmail, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
 from .views.notification_views import GetNotifications, GetNotificationCount
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
 from .views.subscription_views import GetBasket, CheckoutBasket, StripeCheckout, CreateStripePaymentIntent#, SaveStripeInfo
@@ -59,6 +59,8 @@ urlpatterns = [
     path('reset-password', ResetPasswordView.as_view()),
     path('get-email-status', GetEmailStatus.as_view()),
     path('confirm-email', ConfirmEmail_api.as_view()),
+    path('resend-confirm-email', ResendConfirmEmail.as_view()),
+    
 
     path('feedback/submit', Feedback.as_view()),
 

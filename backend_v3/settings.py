@@ -32,7 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -160,7 +160,6 @@ CORS_ORIGIN_WHITELIST = [
     'https://r2sa-v1-frontend.herokuapp.com',
     'https://r2sa-leads.co.uk',
     'https://www.r2sa-leads.co.uk',
-    'http://r2sa-leads.co.uk',
     'https://r2sa-leads.com',
     'https://www.r2sa-leads.com']
 

@@ -45,6 +45,7 @@ class InitDB(APIView):
             )
             # admin.profile.authorisations = ['user'],
             admin.profile.stripe_customer_id = stripe_response.id
+            # admin.profile.cities.add()
             admin.save()
 
         # Notifications
@@ -75,7 +76,7 @@ class UpdateListings(APIView):
             load_and_store_new_listings(city['name'], self.today)
 
         # Add new listings to Users
-        print('Adding new listings to users')
+        # print('Adding new listings to users')
         for listing in Listing.objects.filter():
             # Runs once a day, should catch all new ones.
             # Although more robust to go through all listings
@@ -83,7 +84,7 @@ class UpdateListings(APIView):
                 # print('Listing:', listing.url, listing.id)
                 for user in User.objects.filter(): 
                     if user.profile.cities.filter(name=listing.city.name).exists():
-                        print(f'Adding listings to {user.username} leads list')
+                        # print(f'Adding listings to {user.username} leads list')
                         if listing not in user.profile.user_listings.all():
                             # NOTE: need to set listing status to 0 for that user.
                             user.profile.user_listings.add(listing)
@@ -99,6 +100,7 @@ class UpdateListings(APIView):
 def load_and_store_new_listings(city, today):
     # Load new listings
     try:
+        print(city)
         with open('json_data_' + city + '.json') as json_file:
             all_listings = json.load(json_file)
     except:
@@ -146,12 +148,12 @@ def load_and_store_new_listings(city, today):
             city = city_query[0]
 
         bedrooms = listing['bedrooms']
-        expenses = listing['rent'] * 1.4
-        profit = int(listing['mean_income'] - expenses)
+        # expenses = listing['rent'] * 1.4
+        profit = int(0.6 * (listing['mean_income'] - listing['rent']))
         if profit < 500:
             continue
 
-        breakeven_occupancy = int(expenses / listing['mean_income'] * 100)
+        breakeven_occupancy = int((listing['mean_income'] - profit) / listing['mean_income'] * 100)
         round_profit = np.floor(profit / 1000 )  # profit in 1000's
         
         if round_profit == 0: # If lower than 1000, give profit in 100s
@@ -161,7 +163,7 @@ def load_and_store_new_listings(city, today):
             labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
 
         
-        print( f"Postcode: {listing['postcode']} - £{profit}/month")
+        # print( f"Postcode: {listing['postcode']} - £{profit}/month")
         
         l = Listing(
                 city = city,
@@ -179,12 +181,13 @@ def load_and_store_new_listings(city, today):
             )
         # breakpoint()
 
-        if not Listing.objects.filter(url=listing['url']).exists():
-            l.save()
-            attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
-                        src=listing['excel_sheet'],
-                        size='1kb',)
-            attachment.save()
-            l.attachments.add(attachment)
-        else:
-            print('Listing already exists')
+        # if not Listing.objects.filter(url=listing['url']).exists():
+        #     l.save()
+        #     attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
+        #                 src=listing['excel_sheet'],
+        #                 size='1kb',)
+        #     attachment.save()
+        #     l.attachments.add(attachment)
+        # else:
+        #     pass
+        #     # print('Listing already exists')

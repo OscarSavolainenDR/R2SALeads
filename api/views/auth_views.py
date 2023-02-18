@@ -319,6 +319,8 @@ class ConfirmEmail_api(APIView):
         print('queryset does not exist')
         return Response({'message': 'Stale forgotten password token, request a new one.'}, status=status.HTTP_401_UNAUTHORIZED)
 
+
+
 class GetEmailStatus(APIView):
     def post(self, request, format=None):
         key = request.headers['Authorization'].split(' ')[1]
@@ -338,6 +340,35 @@ class GetEmailStatus(APIView):
 
             email_status = user.profile.email_confirmed
             return Response({'email_status': email_status}, status=status.HTTP_200_OK)
+
+
+class ResendConfirmEmail(APIView):
+    def post(self, request, format=None):
+        key = request.headers['Authorization'].split(' ')[1]
+        # Have a Serializer HERE!
+        key_query_set = Session.objects.filter(key=key)
+
+        if key_query_set.exists():
+            username = key_query_set[0].username
+
+            # Load user's details from DB
+            queryset = User.objects.filter(username=username)
+            if queryset.exists(): 
+                user = queryset[0]
+                print(f'User {user.username} found!')
+            else:
+                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+
+            # Delete old confirmation email object
+            old_confirm = ConfirmEmail.objects.filter(user=user)
+            if old_confirm.exists():
+                old_confirm[0].delete()
+
+            # Resend new one
+            send_email_confirmation(user)
+
+            return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 def send_email_confirmation(user):
