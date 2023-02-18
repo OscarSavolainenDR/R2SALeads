@@ -20,6 +20,9 @@ def stripe_webhook(request):
 
     # breakpoint()
 
+    print('still working')
+    print(request.body)
+
 
     try:
         # event = stripe.Event.construct_from(
