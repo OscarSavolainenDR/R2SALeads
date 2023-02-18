@@ -1,11 +1,27 @@
 import React, { useEffect, useState } from 'react'
 import { Alert } from 'components/ui'
-import { apiGetEmailStatus } from 'services/AuthService'
-
+import { apiGetEmailStatus, apiResendConfirmEmail } from 'services/AuthService'
+import useThemeClass from 'utils/hooks/useThemeClass'
 
 const ConfirmEmail = () => {
+	
+
+	// Styling
+	const { textTheme } = useThemeClass()
+    const boldText = {
+        fontWeight: 'bold',
+        marginLeft: '5px'
+    }
+	const divStyle = {
+        display: 'flex',
+    }
 
 	const [confirmed, setConfirmed] = useState(true);
+
+	const ResendEmail = async () => {
+        const response = await apiResendConfirmEmail()
+		setConfirmed(false)
+    }
 
 	useEffect(() => {
 		
@@ -20,7 +36,6 @@ const ConfirmEmail = () => {
 
 	const message = "To subscribe to a city and checkout to receive leads, we highly advise you confirm your email. \
 	To confirm your email, please go to your signup email's inbox (check spam folder)."
-
 	// const getStatus = async () => {
 
 	// 	// Make API call, check email confirmation status
@@ -39,7 +54,13 @@ const ConfirmEmail = () => {
 	} else {
 		return (
 			<div >
-				{message && <Alert className="mb-4" type="info" showIcon>{message}</Alert>}
+				{message && <Alert className="mb-4" type="info" showIcon>
+					{message}
+					<div style={divStyle}>
+						<p>Click </p><button  style={boldText} className={`cursor-pointer hover:${textTheme}`} onClick={ResendEmail}>here </button> 
+						<p>&nbsp;to resend a confirmation email.</p>
+					</div>
+				</Alert>}
 				
 			</div>
 		)

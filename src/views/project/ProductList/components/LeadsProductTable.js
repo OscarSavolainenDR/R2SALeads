@@ -73,10 +73,11 @@ const ActionColumn = ({row}) => {
 		dispatch(addToggledStatusChanges([...toggledStatusChanges, {status: status, listing_id: row.id}]))
 		const newData = cloneDeep(data)
 		newData[listing_id].status = (newData[listing_id].status + 1) % 4
+		// console.log('New status', newData[listing_id].status)
 		dispatch(updateProductList(newData))
 		// row.status = row.status + 1
-		setBasket([...basket, makeid(8)]);
-		console.log(toggledStatusChanges)
+		// setBasket([...basket, makeid(8)]);
+		// console.log(toggledStatusChanges)
 		dispatch(setAPICounter(updateAPI+1))
 
 		console.log('UpdateAPi value:', updateAPI)
@@ -84,15 +85,17 @@ const ActionColumn = ({row}) => {
 		// const updating = async () => {
 		if (updateAPI > 10) {
 			const success = await updateLeadsListBackend(toggledStatusChanges)
-			dispatch(setAPICounter(0))
-			dispatch(addToggledStatusChanges([]))
 	
+			console.log('Success')
 			if (success){
+				dispatch(setAPICounter(0))
+				dispatch(addToggledStatusChanges([]))
+
 				dispatch(getLeads({filterData: filterData, tableData: tableData}))
 				setBasket([...basket, makeid(8)]);
 				// console.log('Success')
 			} else {
-				dispatch(getLeads({filterData: filterData, tableData: tableData}))
+				// dispatch(getLeads({filterData: filterData, tableData: tableData}))
 				// console.log('Failed')
 			}
 			

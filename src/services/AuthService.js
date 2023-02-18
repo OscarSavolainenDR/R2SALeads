@@ -58,3 +58,11 @@ export async function apiConfirmEmail (data) {
     })
 }
 
+export async function apiResendConfirmEmail (data) {
+    return ApiService.fetchData({
+        url: '/resend-confirm-email',
+        method: 'post',
+        data
+    })
+}
+
