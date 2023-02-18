@@ -21,7 +21,8 @@ def stripe_webhook(request):
     # breakpoint()
 
     print('still working')
-    print(request.body)
+    print(request.body) 
+    print('Sig header', sig_header)
 
 
     try:
