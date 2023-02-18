@@ -18,7 +18,7 @@ const ConfirmEmail = () => {
 		fetchData();
 	  });
 
-	const message = "To subscribe to a city and checkout to receive leads, you must confirm your email. \
+	const message = "To subscribe to a city and checkout to receive leads, we highly advise you confirm your email. \
 	To confirm your email, please go to your signup email's inbox (check spam folder)."
 
 	// const getStatus = async () => {

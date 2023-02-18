@@ -56,12 +56,12 @@ export const UserDropdown = ({ className }) => {
 					</Dropdown.Item>
 				))}
 				{/* <Dropdown.Item variant="divider" /> */}
-				<Dropdown.Item onClick={profile} eventKey="Profile" className="gap-2">
+				{/* <Dropdown.Item onClick={profile} eventKey="Profile" className="gap-2">
 					<span className="text-xl opacity-50">
 						<HiOutlineUser />
 					</span>
 					<span>Profile</span>
-				</Dropdown.Item>
+				</Dropdown.Item> */}
 				<Dropdown.Item onClick={signOut} eventKey="Sign Out" className="gap-2">
 					<span className="text-xl opacity-50">
 						<HiOutlineLogout />

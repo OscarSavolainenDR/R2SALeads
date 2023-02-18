@@ -65,10 +65,9 @@ const ProductDeleteConfirmation = () => {
 			confirmButtonColor="red-600"
 		>
 			<p>
-				Are you sure you want to unsubscribe from this city? 
-				You will lose all access to current and future listings.
-				All record related to this product will be deleted as well. 
-				This action cannot be undone without re-subscribing.
+				IMPORTANT: Are you sure you want to unsubscribe from this city? 
+				You will immediately lose all access to current and future listings from this city.
+				This action cannot be undone without re-subscribing, upon which a new billing period will be started and a new payment taken.
 			</p>
 		</ConfirmDialog>
 	)

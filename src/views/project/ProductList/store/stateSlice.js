@@ -7,6 +7,8 @@ const stateSlice = createSlice({
         removeConfirmation: false,
         selectedProduct: '',
         sortedColumn: () => {},
+        toggledStatusChanges: [],
+        APICounter: 0,
     },
     reducers: {
         toggleDeleteConfirmation: (state, action) => {
@@ -21,6 +23,15 @@ const stateSlice = createSlice({
         setSelectedProduct: (state, action) => {
             state.selectedProduct = action.payload
         },
+        addToggledStatusChanges: (state, action) => {
+            // console.log(state.toggledStatusChanges, action.payload)
+            state.toggledStatusChanges = action.payload 
+            
+        },
+        setAPICounter: (state, action) => {
+            // console.log(state.toggledStatusChanges, action.payload)
+            state.APICounter = action.payload 
+        },
     },
 })
 
@@ -28,7 +39,9 @@ export const {
     toggleDeleteConfirmation, 
     toggleRemoveConfirmation,
     setSortedColumn,
-    setSelectedProduct
+    setSelectedProduct,
+    addToggledStatusChanges,
+    setAPICounter,
 } = stateSlice.actions
 
 export default stateSlice.reducer

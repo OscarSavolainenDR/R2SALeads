@@ -37,7 +37,7 @@ export const downloadExcelBackend = async (data) => {
 export const initialTableData = {
     total: 0,
     pageIndex: 1,
-    pageSize: 10,
+    pageSize: 100,
     query: '',
     sort: {
         order: '',
@@ -46,11 +46,9 @@ export const initialTableData = {
 }
 
 export const initialFilterData = {
-    name: '',
     // category: ['England', 'Wales', 'Scotland', 'Ireland'],
     // beds: [1, 2, 3, 4, 5],
-    status: [0, 1, 2], // subscribed, in basket or not subscribed
-    productStatus: 0,
+    status: [0, 1, 2, 3], // subscribed, in basket or not subscribed
 }
 // state.projectTableView.data.productList)
 const dataSlice = createSlice({
@@ -75,6 +73,9 @@ const dataSlice = createSlice({
         setFilterData: (state, action) => {
             state.filterData = action.payload
         },
+        // setRowState: (state, action) => {
+        //     state.tableData = action.payload
+        // },
     },
     extraReducers: {
         [getLeads.fulfilled]: (state, action) => {

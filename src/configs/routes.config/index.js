@@ -56,16 +56,16 @@ export const protectedRoutes = [
         component: React.lazy(() => import('views/legals/PrivacyPolicy')),
         authority: [ADMIN, USER],
     },
-    {
-        key: 'appsAccount.settings',
-        path: `${APP_PREFIX_PATH}/account/settings/:tab`,
-        component: React.lazy(() => import('views/account/Settings')),
-        authority: [ADMIN, USER],
-        meta: {
-            header: 'Account',
-            headerContainer: true
-        }
-    },
+    // {
+    //     key: 'appsAccount.settings',
+    //     path: `${APP_PREFIX_PATH}/account/settings/:tab`,
+    //     component: React.lazy(() => import('views/account/Settings')),
+    //     authority: [ADMIN, USER],
+    //     meta: {
+    //         header: 'Account',
+    //         headerContainer: true
+    //     }
+    // },
     {
         key: 'appsGen.feedback',
         path: `${APP_PREFIX_PATH}/feedback`,

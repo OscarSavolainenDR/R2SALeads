@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from 'components/ui'
 import { HiDownload, HiShoppingCart } from 'react-icons/hi'
 import LeadsProductTableSearch from './LeadsProductTableSearch'
-// import ProductFilter from './ProductFilter'
+import LeadsProductFilter from './LeadsProductFilter'
 import { useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 
@@ -15,7 +15,7 @@ const LeadsProductTableTools = () => {
 	return (
 		<div className="flex flex-col lg:flex-row lg:items-center">
 			<LeadsProductTableSearch />
-			{/* <ProductFilter /> */}
+			<LeadsProductFilter />
 			{/* <Link 
 				className="block lg:inline-block md:mx-2 md:mb-0 mb-4" 
 				to="/data/product-list.csv" 

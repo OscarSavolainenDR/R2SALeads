@@ -1,7 +1,7 @@
 import React, { useState, useRef, forwardRef } from 'react'
 import { HiOutlineFilter, HiOutlineSearch } from 'react-icons/hi'
 import { useDispatch, useSelector } from 'react-redux'
-import { getProducts, setFilterData, initialTableData } from '../store/dataSlice'
+import { getLeads, setFilterData, initialTableData } from '../store/dataSlice'
 import { 
     Input,
     Button,
@@ -17,13 +17,16 @@ const FilterForm = forwardRef(({onSubmitComplete}, ref) => {
 
 	const dispatch = useDispatch()
 
+	const tableData = useSelector((state) => state.projectTableView.data.tableData)
 	const filterData = useSelector((state) => state.projectTableView.data.filterData)
 	const sortedColumn = useSelector((state) => state.projectTableView.state.sortedColumn)
 	
 	const handleSubmit = values => {
 		onSubmitComplete?.()
 		dispatch(setFilterData(values))
-		dispatch(getProducts(initialTableData))
+		// dispatch(getLeads(initialTableData))
+		console.log(values)
+		dispatch(getLeads({filterData: values, tableData: tableData}))
 		sortedColumn?.clearSortBy?.()
 	}
 
@@ -40,45 +43,8 @@ const FilterForm = forwardRef(({onSubmitComplete}, ref) => {
 				<Form>
 					<FormContainer>
 						<FormItem
-							invalid={errors.name && touched.name}
-							errorMessage={errors.name}
-						>
-							<h6 className="mb-4">Included text</h6>
-							<Field 
-								type="text" 
-								autoComplete="off" 
-								name="name" 
-								placeholder="Keyword" 
-								component={Input}
-								prefix={<HiOutlineSearch className="text-lg" />} 
-							/>
-						</FormItem>
-						<FormItem
 							invalid={errors.category && touched.category}
 							errorMessage={errors.category}
-						>
-							<h6 className="mb-4">Country</h6>
-							<Field name="category">
-								{({ field, form }) => (
-									<>
-										<Checkbox.Group
-											vertical
-											onChange={options => form.setFieldValue(field.name, options) } 
-											value={values.category}
-										>
-											<Checkbox className="mb-3" name={field.name} value="england">England </Checkbox>
-											<Checkbox className="mb-3" name={field.name} value="wales">Wales </Checkbox>
-											<Checkbox className="mb-3" name={field.name} value="scotland">Scotland </Checkbox>
-											{/* <Checkbox className="mb-3" name={field.name} value="shoes">Shoes </Checkbox> */}
-											{/* <Checkbox name={field.name} value="watches">Watches </Checkbox> */}
-										</Checkbox.Group>
-									</>
-								)}
-							</Field>
-						</FormItem>
-						<FormItem
-							invalid={errors.status && touched.status}
-							errorMessage={errors.status}
 						>
 							<h6 className="mb-4">Status</h6>
 							<Field name="status">
@@ -87,16 +53,20 @@ const FilterForm = forwardRef(({onSubmitComplete}, ref) => {
 										<Checkbox.Group
 											vertical
 											onChange={options => form.setFieldValue(field.name, options) } 
-											value={values.status}
+											value={values.category}
 										>
-											<Checkbox className="mb-3" name={field.name} value={0}>Subscribed </Checkbox>
-											<Checkbox className="mb-3" name={field.name} value={1}>In Basket</Checkbox>
-											<Checkbox className="mb-3" name={field.name} value={2}>Not Subscribed </Checkbox>
+											<Checkbox className="mb-3" name={field.name} value={0}>Leads </Checkbox>
+											<Checkbox className="mb-3" name={field.name} value={1}>Contacted </Checkbox>
+											<Checkbox className="mb-3" name={field.name} value={2}>Viewing Booked </Checkbox>
+											<Checkbox className="mb-3" name={field.name} value={3}>Ignore </Checkbox>
+											{/* <Checkbox className="mb-3" name={field.name} value="shoes">Shoes </Checkbox> */}
+											{/* <Checkbox name={field.name} value="watches">Watches </Checkbox> */}
 										</Checkbox.Group>
 									</>
 								)}
 							</Field>
 						</FormItem>
+				
 						{/* <FormItem
 							invalid={errors.productStatus && touched.productStatus}
 							errorMessage={errors.productStatus}

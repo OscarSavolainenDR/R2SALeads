@@ -4,9 +4,9 @@ import { DataTable } from 'components/shared'
 import { HiOutlineDownload } from 'react-icons/hi'
 import { FiPackage } from 'react-icons/fi'
 import { useDispatch, useSelector } from 'react-redux'
-import { getLeads, setTableData, updateLeadsListBackend, downloadExcelBackend } from '../store/dataSlice'
-import { setSortedColumn, setSelectedProduct } from '../store/stateSlice'
-import { toggleDeleteConfirmation, toggleRemoveConfirmation } from '../store/stateSlice'
+import { getLeads, setTableData, updateProductList, updateLeadsListBackend, downloadExcelBackend } from '../store/dataSlice'
+import { setSortedColumn, setSelectedProduct, setAPICounter } from '../store/stateSlice'
+import { addToggledStatusChanges} from '../store/stateSlice'
 import useThemeClass from 'utils/hooks/useThemeClass'
 // import LeadsProductDeleteConfirmation from './ProductDeleteConfirmation'
 // import LeadsRemoveFromBasketConfirmation from './RemoveFromBasketConfirmation'
@@ -20,6 +20,7 @@ const inventoryStatusColor = {
 	1: { label: 'Contacted', textClass: 'text-amber-500' },
 	// 2: { label: 'Not Subscribed', dotClass: 'bg-red-500', textClass: 'text-red-500' },
 	2: { label: 'Viewing Booked',  textClass: 'text-emerald-500' }, //dotClass: 'bg-grey-500',
+	3: { label: 'Ignore',  textClass: 'text-red-500' }, //dotClass: 'bg-grey-500',
 }
 
 function makeid(length) {
@@ -42,7 +43,12 @@ const ActionColumn = ({row}) => {
 	// const basket = useSelector((state) => state.salesProductList.data.checkoutBasket)
 	const data = useSelector((state) => state.projectTableView.data.productList)
 	const tableData = useSelector((state) => state.projectTableView.data.tableData)
-	
+	const filterData = useSelector((state) => state.projectTableView.data.filterData)
+	const toggledStatusChanges = useSelector((state) => state.projectTableView.state.toggledStatusChanges)
+	// const [updateAPI, setUpdateAPI] = useState(0);
+	// const [update, setUpdate] = useState([]);
+	const updateAPI = useSelector((state) => state.projectTableView.state.APICounter)
+
 	
 	// const selectedProduct = useSelector((state) => state.salesProductList.state.selectedProduct)
 	// const { status } = props.row.original
@@ -61,17 +67,48 @@ const ActionColumn = ({row}) => {
 		// console.log('listing dict', listing_dict)
 		const status = listing_dict['status']
 
-		const success = await updateLeadsListBackend({'status': status, 'id': row.id})
+		// Update state here, not backend.
+		// We are storing the status and row.id herem, so we can send them batched to the backend.
+		// Also have to update the table.
+		dispatch(addToggledStatusChanges([...toggledStatusChanges, {status: status, listing_id: row.id}]))
+		const newData = cloneDeep(data)
+		newData[listing_id].status = (newData[listing_id].status + 1) % 4
+		dispatch(updateProductList(newData))
+		// row.status = row.status + 1
+		setBasket([...basket, makeid(8)]);
+		console.log(toggledStatusChanges)
+		dispatch(setAPICounter(updateAPI+1))
 
-		// Add alert notification
-		if (success){
-			dispatch(getLeads(tableData))
-			setBasket([...basket, makeid(8)]);
-			// console.log('Success')
-		} else {
-			dispatch(getLeads(tableData))
-			// console.log('Failed')
+		console.log('UpdateAPi value:', updateAPI)
+
+		// const updating = async () => {
+		if (updateAPI > 10) {
+			const success = await updateLeadsListBackend(toggledStatusChanges)
+			dispatch(setAPICounter(0))
+			dispatch(addToggledStatusChanges([]))
+	
+			if (success){
+				dispatch(getLeads({filterData: filterData, tableData: tableData}))
+				setBasket([...basket, makeid(8)]);
+				// console.log('Success')
+			} else {
+				dispatch(getLeads({filterData: filterData, tableData: tableData}))
+				// console.log('Failed')
+			}
+			
 		}
+		// }
+
+		// const success = await updateLeadsListBackend({'status': status, 'id': row.id})
+
+		// if (success){
+		// 	dispatch(getLeads({filterData: filterData, tableData: tableData}))
+		// 	setBasket([...basket, makeid(8)]);
+		// 	// console.log('Success')
+		// } else {
+		// 	dispatch(getLeads({filterData: filterData, tableData: tableData}))
+		// 	// console.log('Failed')
+		// }
 	}
 
 	// console.log('used status', row.status)
@@ -123,11 +160,11 @@ const LeadsProductTable = () => {
 	[pageIndex, pageSize, sort, query, total])
 
 	const fetchData = () => {
-		dispatch(getLeads({pageIndex, pageSize, sort, query, filterData}))
+		dispatch(getLeads({filterData: filterData, tableData: tableData}))
 	}
 
 	
-	const downloadExcel = async (file_id) => {
+	const downloadExcel = async (file_id, url) => {
 
 		// console.log(file_id)
 
@@ -143,7 +180,7 @@ const LeadsProductTable = () => {
 		// console.log(excel_array)
 
 		const exportType =  exportFromJSON.types.csv
-		const outputFilename = `${file_id}_due_diligence.csv`;
+		const outputFilename = `${url}_due_diligence.csv`;
 		if (excel != {}) {
 			exportFromJSON({ data: excel_array, fileName: outputFilename, exportType: exportType }) 
 		}
@@ -257,7 +294,7 @@ const LeadsProductTable = () => {
 			},
 		},
 		{
-			Header: 'Expected Income',
+			Header: 'Expected Turnover',
 			accessor: 'expected_income',
 			sortable: true,
 			Cell: props => {
@@ -279,6 +316,20 @@ const LeadsProductTable = () => {
 			},
 		},
 		{
+			Header: 'Due Diligence Excel',
+			accessor: 'excel',
+			sortable: true,
+			Cell: props => {
+				// const { url } = props.row.original
+				const { textTheme } = useThemeClass()
+				return (
+					<span className={`cursor-pointer p-2 hover:${textTheme}`} onClick={() => downloadExcel(props.row.original.id, props.row.original.url)}>
+						<HiOutlineDownload/>
+					</span>
+				)
+			},
+		},
+		{
 			Header: 'URL',
 			accessor: 'url',
 			sortable: true,
@@ -288,20 +339,6 @@ const LeadsProductTable = () => {
 				return (
 					<span className={`cursor-pointer hover:${textTheme}`}>
 						<a href={url} target="_blank">{url}</a>
-					</span>
-				)
-			},
-		},
-		{
-			Header: 'Due Diligence Excel',
-			accessor: 'excel',
-			sortable: true,
-			Cell: props => {
-				// const { url } = props.row.original
-				const { textTheme } = useThemeClass()
-				return (
-					<span className={`cursor-pointer p-2 hover:${textTheme}`} onClick={() => downloadExcel(props.row.original.id)}>
-						<HiOutlineDownload/>
 					</span>
 				)
 			},
