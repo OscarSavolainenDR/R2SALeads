@@ -144,25 +144,44 @@ class GetTableLeads(APIView):
                 print(f'User {user.username} found!')
             else:
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+            
+            print(request.data)
 
+            table_data = request.data['tableData']
+            filter_data = request.data['filterData']
 
             # NOTE: Add a serializer here, very important for query safety
-            page_index = request.data['pageIndex']
-            page_size = request.data['pageSize']
-            sort = request.data['sort']
-            query = request.data['query'] 
+            page_index = table_data['pageIndex']
+            page_size = table_data['pageSize']
+            sort = table_data['sort']
+            query = table_data['query'] 
             order = sort['order']
             search_key = sort['key']
+            statuses = filter_data['status']
 
             # import pdb; pdb.set_trace()
             listings = user.profile.user_listings.all()
+            print(f'We start with {len(listings)} listings')
             total_listings_len = len(listings)
 
             if query:
                 # import pdb; pdb.set_trace()
                 listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query)).distinct()
-            # NOTE: put as search term in sorting
 
+            # NOTE: put as search term in sorting
+            print(f'We have {len(listings)} listings')
+            # Get everything with status not in the filtered data
+            not_statuses = []
+            for status_ in range(4):
+                if status_ not in statuses:
+                    not_statuses.append(status_)
+
+            print('Not statuses', not_statuses)
+            for status_ in not_statuses:
+                print('Status', status_)
+                listings = listings.exclude(authorised_listings__user=user.profile, authorised_listings__status=status_)
+
+            print(f'We still have {len(listings)} listings')
             # Sort data (by alphabetical order)
             if search_key:
                 if (not search_key == 'status') and (not search_key == 'country'):
@@ -200,7 +219,7 @@ class GetTableLeads(APIView):
             # Iterate through listings, return only what is needed
             sent_listings = []
             for listing in page_listings:
-                if  listing.profit < 500:
+                if listing.profit < 500:
                     continue
                 l = {
                         'city': listing.city.name,
@@ -248,6 +267,8 @@ class GetTableLeads(APIView):
                     'data': json.dumps(sent_listings),
                     'total': len(sent_listings),
                 }
+
+                print('We send a response')
 
                 # {"msg": f"There are currently no listings in those cities the user {user.username} is authorised to see."}
                 return Response(response_data, status=status.HTTP_200_OK)
@@ -388,23 +409,28 @@ class UpdateLeadsListBackend(APIView):
             else:
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
 
-            # Get listing id, where it came from (e.g. leads) and where its going (e.g. contacted)
-            listing_id = request.data['id']
-            listing_from = request.data['status']
-            listing_to = (listing_from + 1) % 3 # can be 0, 1 or 2, and toggling cycles them.
-            # print(request.data)
-            print(f'Deleting {listing_id} from {listing_from}, adding to {listing_to}')
-        
-            # CHnage the listing's status for that user
-            user_listing = Authorised_Listings.objects.filter(user=user.profile, listing_id = listing_id)[0]
-            user_listing.status = listing_to
-            # if listing_to == 0:
-            #     user_listing.status = 0
-            # elif listing_to == 'Contacted':
-            #     user_listing.status = 1
-            # elif listing_to == 'Viewing Booked':
-            #     user_listing.status = 2
-            user_listing.save()
+            print(request.data)
+            updates = request.data
+
+            for update in updates:
+
+                # Get listing id, where it came from (e.g. leads) and where its going (e.g. contacted)
+                listing_id = update['listing_id']
+                listing_from = update['status']
+                listing_to = (listing_from + 1) % 4 # can be 0, 1, 2, or 3, and toggling cycles them.
+                # print(request.data)
+                print(f'Deleting {listing_id} from {listing_from}, adding to {listing_to}')
+            
+                # CHnage the listing's status for that user
+                user_listing = Authorised_Listings.objects.filter(user=user.profile, listing_id = listing_id)[0]
+                user_listing.status = listing_to
+                # if listing_to == 0:
+                #     user_listing.status = 0
+                # elif listing_to == 'Contacted':
+                #     user_listing.status = 1
+                # elif listing_to == 'Viewing Booked':
+                #     user_listing.status = 2
+                user_listing.save()
             user.save()
 
             return Response(status=status.HTTP_200_OK)

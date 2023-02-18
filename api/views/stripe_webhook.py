@@ -11,19 +11,10 @@ webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
 # Using Django
 @csrf_exempt
 def stripe_webhook(request):
-        
-    print('stripe webhook called')
 
     payload = request.body.decode('utf-8')
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
-
-    # breakpoint() 
-
-    print('still working')
-    print(request.body) 
-    print('Sig header', sig_header)
-
 
     try:
         # event = stripe.Event.construct_from(
@@ -36,8 +27,6 @@ def stripe_webhook(request):
         print(e)
         # Invalid payload
         return HttpResponse(status=400)
-
-    print(event)
 
     # Handle the event
     if event.type == 'payment_intent.succeeded':

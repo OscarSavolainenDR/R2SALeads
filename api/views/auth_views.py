@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics, status
 from ..serializers.auth_serializers import SignInSerializer, SignOutSerializer, SignUpSerializer #,ForgotPasswordSerializer
-from ..models import Listing, User, Notification, Attachment, Session, ResetPassword, ConfirmEmail
+from ..models import Listing, User, City, Subscription, Session, ResetPassword, ConfirmEmail
 from rest_framework.views import APIView 
 from rest_framework.response import Response 
 from django.http import JsonResponse
@@ -15,6 +15,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 import asyncio
+from datetime import date
 # from ...backend_v3.settings import BASE_DIR
 
 import os
@@ -153,7 +154,17 @@ class SignUp(APIView):
             # new_user.profile.authorised_listings_booked = [],
             # new_user.set_cities()
 
+            # Create subscription to Oxford (default)
+            city = City.objects.filter(name='Oxford')[0]
+            Subscription.objects.create(user=new_user.profile, city=city)
 
+            # Add new listings to User
+            for listing in Listing.objects.filter(city=city):
+                if listing.created_at <= date.today():
+                    if listing not in new_user.profile.user_listings.all():
+                        # NOTE: need to set listing status to 0 for that user.
+                        new_user.profile.user_listings.add(listing)
+            new_user.save()
 
             # NOTE: Send email confirmation to them.
             send_email_confirmation(new_user)

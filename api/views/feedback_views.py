@@ -53,7 +53,7 @@ class Feedback(APIView):
             }
             email = render_to_string(email_template_name, c)
             try:   
-                send_mail(subject, email, 'contact@r2sa-leads.co.uk' , "contact@r2sa-leads.co.uk", fail_silently=False)
+                send_mail(subject, email, 'contact@r2sa-leads.co.uk' , ["contact@r2sa-leads.co.uk"], fail_silently=False)
                 print(f"Email sent successfully for user {user.email}")
             except Exception as e:
                 print(e)
