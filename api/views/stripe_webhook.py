@@ -14,11 +14,11 @@ def stripe_webhook(request):
         
     print('stripe webhook called')
 
-    payload = request.body
+    payload = request.body.decode('utf-8')
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
 
-    # breakpoint()
+    # breakpoint() 
 
     print('still working')
     print(request.body) 
