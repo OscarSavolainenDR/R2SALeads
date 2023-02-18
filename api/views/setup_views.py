@@ -146,12 +146,12 @@ def load_and_store_new_listings(city, today):
             city = city_query[0]
 
         bedrooms = listing['bedrooms']
-        expenses = listing['rent'] * 1.3
-        profit = int(listing['median_income'] - expenses)
+        expenses = listing['rent'] * 1.4
+        profit = int(listing['mean_income'] - expenses)
         if profit < 500:
             continue
 
-        breakeven_occupancy = int(expenses / listing['median_income'] * 100)
+        breakeven_occupancy = int(expenses / listing['mean_income'] * 100)
         round_profit = np.floor(profit / 1000 )  # profit in 1000's
         
         if round_profit == 0: # If lower than 1000, give profit in 100s
@@ -168,7 +168,7 @@ def load_and_store_new_listings(city, today):
                 postcode = f"{listing['postcode']}",
                 rent = int(listing['rent']),
                 breakeven_occupancy = breakeven_occupancy,
-                expected_income = int(listing['median_income']),
+                expected_income = int(listing['mean_income']),
                 profit = profit,
                 description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
                 comments = '',
