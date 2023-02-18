@@ -26,7 +26,9 @@ const Home = () => {
 				You can even download the due diligence for each listing, and check how many Airbnbs are in the area, how much they earn, what their occupancy rates are, and take a look at their profiles on Airbnb!
 				<br />
 				<br />
-				
+				Our profit calculations are very conservative: 60% of (mean turnover - listing rent), where the mean turnover is that of Airbnbs within 500m and with the same number of bedrooms.
+				<br />
+				<br />
 				We make finding R2SA Leads easy. Get started by going to Manage Lead Subscriptions, and signing up for your city of choice! 
 				<br />
 				If you want to check out what the leads look like, go to Leads and see what's looking good in Oxford &#40;we give Leads there for free so you can see what the service is like&#41;.
