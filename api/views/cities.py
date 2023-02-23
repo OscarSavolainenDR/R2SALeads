@@ -1,6 +1,6 @@
 
 # Production 
-London = dict(name='London', country='England', price=1, stripe_subscription_code='price_1MekkKJeYWzBWqCqwLsMZFiF'), # Test at 1p
+London = dict(name='London', country='England', price=1, stripe_subscription_code='price_1MemSyJeYWzBWqCqobOS1Hmv'), # Test at 1p
 Swansea = dict(name='Swansea', country='Wales', price=50, stripe_subscription_code='price_1MaMDnJeYWzBWqCqf0gSXoQi')
 Southampton = dict(name='Southampton', country='England', price=50, stripe_subscription_code='price_1MaMDIJeYWzBWqCqBTgxcNBk'),
 Plymouth = dict(name='Plymouth', country='England', price=50, stripe_subscription_code='price_1MaMD4JeYWzBWqCqZnfrGMjT'),

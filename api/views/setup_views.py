@@ -41,6 +41,7 @@ class InitDB(APIView):
                 print(f"Updating city {city['name']}")
                 city_elem = city_query[0]
                 city_elem.price = city['price']
+                city_elem.country = city['country']
                 city_elem.stripe_subscription_code = city['stripe_subscription_code']
                 city_elem.save()
 

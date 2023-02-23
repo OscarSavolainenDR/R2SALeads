@@ -97,8 +97,11 @@ class DownloadExcel(APIView):
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
 
-            # try:
-            df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
+            try:
+                df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
+            except Exception as e:
+                print(e)
+                return Response(status=status.HTTP_400_BAD_REQUEST)
 
             # Initialize data
             data=[0 for i in range(len(df))]
