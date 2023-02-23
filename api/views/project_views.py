@@ -10,6 +10,7 @@ from django.db.models import Q
 from django.core.serializers.json import DjangoJSONEncoder
 import json
 import pandas as pd
+import os
 
 
 def find_indices(lst, condition):
@@ -90,7 +91,7 @@ class DownloadExcel(APIView):
                 listing = listing_query[0]
                 city = listing.city.name
 
-                excel_path = f'Excels/{city}.xlsx'
+                excel_path = os.path.join('Excels', f'{city}.xlsx')
                 listing_sheet = f'Listing_{listing.excel_sheet}'
                 # breakpoint()
             else:
