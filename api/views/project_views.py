@@ -91,7 +91,8 @@ class DownloadExcel(APIView):
                 listing = listing_query[0]
                 city = listing.city.name
 
-                excel_path = os.path.join('Excels', f'{city}.xlsx')
+                # Searches in Excels/
+                excel_path = f'{city}.xlsx' # os.path.join('Excels', )
                 listing_sheet = f'Listing_{listing.excel_sheet}'
                 # breakpoint()
             else:
