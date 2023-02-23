@@ -31,9 +31,18 @@ class InitDB(APIView):
             if type(city) is tuple:
                 city = city[0]
 
-            if not City.objects.filter(name=city['name']).exists():
+            # If new, create.
+            city_query = City.objects.filter(name=city['name'])
+            if not city_query.exists():
                 city_elem = City(name=city['name'], country=city['country'], price=city['price'], stripe_subscription_code=city['stripe_subscription_code'])
                 city_elem.save()
+            # If already exists, just update the city (since pricing may change).
+            else:
+                city_elem = city_query[0]
+                city_elem.price = city['price']
+                city_elem.stripe_subscription_code = city['stripe_subscription_code']
+                city_elem.save()
+
       
         if not User.objects.filter(username='admin').exists():
             admin = User(username='admin', password='abc',
@@ -97,55 +106,52 @@ class UpdateListings(APIView):
         return Response(status=status.HTTP_200_OK)
 
 
-def load_and_store_new_listings(city, today):
+def load_and_store_new_listings(city_name, today):
     # Load new listings
     try:
-        print(city)
-        with open('json_data_' + city + '.json') as json_file:
+        print(city_name)
+        with open('json_data_' + city_name + '.json') as json_file:
             all_listings = json.load(json_file)
     except:
-        print(city, 'failed')
+        print(city_name, 'failed')
         return
 
-    # If existing listing is expired, delete. 
-    # If recently expired, mark it as expired
-    # so doesn't just disappear from frontend
-    listing_queryset = Listing.objects.filter()
-    for listing in listing_queryset:
-        # If expired recently
-        if listing.expired_date <= today:
-            listing.url = 'Listing no longer on the market'
-            listing.postcode = 'X'
-        # If expired more than 3 days ago
-        elif listing.expired_date < today - timedelta(days=3):
-            listing.delete() 
-
-    # Delete all past listings (risky, think of a better way)
+    # # If existing listing is expired, delete. 
+    # # If recently expired, mark it as expired
+    # # so doesn't just disappear from frontend
     # listing_queryset = Listing.objects.filter()
-    # Listing.objects.all().delete()
     # for listing in listing_queryset:
-    #     listing.delete()
+    #     # If expired recently
+    #     if listing.expired_date <= today:
+    #         listing.url = 'Listing no longer on the market'
+    #         listing.postcode = 'X'
+    #     # If expired more than 3 days ago
+    #     elif listing.expired_date < today - timedelta(days=3):
+    #         listing.delete()  
+
+    city = City.objects.filter(name=city_name)[0]
+    listing_queryset = Listing.objects.filter(city=city)
+
+    # Delete all listings in the desired city, that aren't in the new results
+    all_urls_in_json = [listing['url'] for listing in all_listings]
+    for db_listing in listing_queryset:
+        if db_listing.url not in all_urls_in_json:
+            db_listing.delete()
 
     # Store in DB if new
-    for i, listing in enumerate(all_listings):
+    for i, listing in enumerate(listing_queryset):  # iterating through listings in json
 
-        # Skip already existing listings in DB
+        # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
+        # and treat it as a new listing)
         check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
         if check_if_already_in_DB.exists():
             # If rent is the same, skip
             if check_if_already_in_DB[0].rent == listing['rent']:
                 continue
-            # Otherwise delete the lisitng, go again
+            # Otherwise delete the listing, go again
             else:
                 check_if_already_in_DB[0].delete()
                 # Could have a listing['reduced'] = True here, and do something with that to signal to front end listing is reduced
-
-        city_query = City.objects.filter(name=listing['city'])
-        if not city_query.exists():
-            city = City(name=listing['city'], country=listing['country'])
-            city.save()
-        else:
-            city = city_query[0]
 
         bedrooms = listing['bedrooms']
         # expenses = listing['rent'] * 1.4
@@ -161,7 +167,6 @@ def load_and_store_new_listings(city, today):
             labels = [f'{bedrooms} bed', f'{round_profit}00+ profit']
         else:
             labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
-
         
         # print( f"Postcode: {listing['postcode']} - £{profit}/month")
         
@@ -181,13 +186,5 @@ def load_and_store_new_listings(city, today):
             )
         # breakpoint()
 
-        # if not Listing.objects.filter(url=listing['url']).exists():
-        #     l.save()
-        #     attachment =    Attachment.objects.create(name = f'due_diligence_{l.id}',
-        #                 src=listing['excel_sheet'],
-        #                 size='1kb',)
-        #     attachment.save()
-        #     l.attachments.add(attachment)
-        # else:
-        #     pass
-        #     # print('Listing already exists')
+        if not Listing.objects.filter(url=listing['url']).exists():
+            l.save()

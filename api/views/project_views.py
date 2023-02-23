@@ -219,8 +219,6 @@ class GetTableLeads(APIView):
             # Iterate through listings, return only what is needed
             sent_listings = []
             for listing in page_listings:
-                if listing.profit < 500:
-                    continue
                 l = {
                         'city': listing.city.name,
                         'country': listing.city.country,
@@ -234,6 +232,7 @@ class GetTableLeads(APIView):
                         'url': listing.url,
                         'id': listing.id,
                     }
+                # if l not in sent_listin
                 sent_listings.append(l)
 
             # Serialize response
