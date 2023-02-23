@@ -90,7 +90,7 @@ class DownloadExcel(APIView):
                 listing = listing_query[0]
                 city = listing.city.name
 
-                excel_path = f'excels/{city}.xlsx'
+                excel_path = f'Excels/{city}.xlsx'
                 listing_sheet = f'Listing_{listing.excel_sheet}'
                 # breakpoint()
             else:
