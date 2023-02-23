@@ -16,7 +16,7 @@ import numpy as np
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
-from .cities import test_cities as cities
+from .cities import cities as cities
 
 
 ## Just for filling the DB with dummy data, can be adapted later for actually updating the DB.
@@ -38,6 +38,7 @@ class InitDB(APIView):
                 city_elem.save()
             # If already exists, just update the city (since pricing may change).
             else:
+                print(f"Updating city {city['name']}")
                 city_elem = city_query[0]
                 city_elem.price = city['price']
                 city_elem.stripe_subscription_code = city['stripe_subscription_code']
