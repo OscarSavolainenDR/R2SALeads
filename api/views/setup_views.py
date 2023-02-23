@@ -133,13 +133,17 @@ def load_and_store_new_listings(city_name, today):
     listing_queryset = Listing.objects.filter(city=city)
 
     # Delete all listings in the desired city, that aren't in the new results
-    all_urls_in_json = [listing['url'] for listing in all_listings]
-    for db_listing in listing_queryset:
-        if db_listing.url not in all_urls_in_json:
-            db_listing.delete()
+    try:
+        all_urls_in_json = [listing['url'] for listing in all_listings]
+        for db_listing in listing_queryset:
+            if db_listing.url not in all_urls_in_json:
+                db_listing.delete()
+    except Exception as e:
+        print(e)
+        return
 
     # Store in DB if new
-    for i, listing in enumerate(listing_queryset):  # iterating through listings in json
+    for i, listing in enumerate(all_listings):  # iterating through listings in json
 
         # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
         # and treat it as a new listing)
