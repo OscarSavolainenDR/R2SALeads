@@ -1,11 +1,12 @@
 
-# Production
+# Production 
+London = dict(name='London', country='England', price=1, stripe_subscription_code='price_1MekkKJeYWzBWqCqwLsMZFiF'), # Test at 1p
 Swansea = dict(name='Swansea', country='Wales', price=50, stripe_subscription_code='price_1MaMDnJeYWzBWqCqf0gSXoQi')
 Southampton = dict(name='Southampton', country='England', price=50, stripe_subscription_code='price_1MaMDIJeYWzBWqCqBTgxcNBk'),
 Plymouth = dict(name='Plymouth', country='England', price=50, stripe_subscription_code='price_1MaMD4JeYWzBWqCqZnfrGMjT'),
 Oxford = dict(name='Oxford', country='England', price=50, stripe_subscription_code='price_1MaMCsJeYWzBWqCqNMnEpmct'),
 Manchester = dict(name='Manchester', country='England', price=50, stripe_subscription_code='price_1MaMCeJeYWzBWqCqmbfDj3m5'),
-London = dict(name='London', country='England', price=200, stripe_subscription_code='price_1MaM7ZJeYWzBWqCqKDTebsJc'),
+# London = dict(name='London', country='England', price=200, stripe_subscription_code='price_1MaM7ZJeYWzBWqCqKDTebsJc'),
 Liverpool = dict(name='Liverpool', country='England', price=50, stripe_subscription_code='price_1MaMCRJeYWzBWqCqUdiypKw9'),
 Glasgow = dict(name='Glasgow', country='Scotland', price=50, stripe_subscription_code='price_1MaMC8JeYWzBWqCqsFn5ptiA'),
 Dover = dict(name='Dover', country='England', price=50, stripe_subscription_code='price_1MaMBuJeYWzBWqCqUcJLPoYK'),

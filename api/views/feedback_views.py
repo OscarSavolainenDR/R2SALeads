@@ -38,6 +38,7 @@ class Feedback(APIView):
                 return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
 
             # SEND EMAIL WITH VERIFICATION CODE
+            print('Sending feedback', request.data)
             feedback = request.data
 
             subject = "Feedback - R2SA Leads"

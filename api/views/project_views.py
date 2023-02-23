@@ -420,7 +420,7 @@ class UpdateLeadsListBackend(APIView):
                 # print(request.data)
                 print(f'Deleting {listing_id} from {listing_from}, adding to {listing_to}')
             
-                # CHnage the listing's status for that user
+                # Change the listing's status for that user
                 user_listing = Authorised_Listings.objects.filter(user=user.profile, listing_id = listing_id)[0]
                 user_listing.status = listing_to
                 # if listing_to == 0:
