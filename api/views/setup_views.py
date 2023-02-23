@@ -54,7 +54,8 @@ class InitDB(APIView):
             )
             # admin.profile.authorisations = ['user'],
             admin.profile.stripe_customer_id = stripe_response.id
-            # admin.profile.cities.add()
+            city = City.objects.filter(name=city['name'])[0]
+            admin.profile.cities.add(city)
             admin.save()
 
         # Notifications
