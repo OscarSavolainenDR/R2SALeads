@@ -204,4 +204,3 @@ def load_and_store_new_listings(city_name, today):
             l.save()
         else:
             print('Listing exists already')
-y
