@@ -146,23 +146,25 @@ def load_and_store_new_listings(city_name, today):
         return
 
     # Store in DB if new
-    for i, listing in enumerate(all_listings):  # iterating through listings in json
+    for _, listing in enumerate(all_listings):  # iterating through listings in json
 
         # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
         # and treat it as a new listing)
         check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
         if check_if_already_in_DB.exists():
-            if check_if_already_in_DB[0].excel_sheet != int(listing["excel_sheet"].split('Listing_',1)[1]):
-                print(f'wrong index, is {check_if_already_in_DB[0].excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
+            existing_DB_listing = check_if_already_in_DB[0]
+            if existing_DB_listing.excel_sheet != int(listing["excel_sheet"].split('Listing_',1)[1]):
+                print(f'wrong index, is {existing_DB_listing.excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
                 # breakpoint()
-                check_if_already_in_DB[0].excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
-                check_if_already_in_DB[0].save()
+                existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
+                existing_DB_listing.save()
             # If rent is the same, skip
-            if check_if_already_in_DB[0].rent == listing['rent']:
+            if existing_DB_listing.rent == listing['rent']:
                 continue
             # Otherwise delete the listing, go again
             else:
-                check_if_already_in_DB[0].delete()
+                print(f"Deleted listing {existing_DB_listing.excel_sheet}")
+                existing_DB_listing.delete()
                 # Could have a listing['reduced'] = True here, and do something with that to signal to front end listing is reduced
 
         bedrooms = listing['bedrooms']
@@ -181,7 +183,7 @@ def load_and_store_new_listings(city_name, today):
             labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
         
         # print( f"Postcode: {listing['postcode']} - £{profit}/month")
-        
+        print(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
         l = Listing(
                 city = city,
                 postcode = f"{listing['postcode']}",
@@ -200,3 +202,5 @@ def load_and_store_new_listings(city_name, today):
 
         if not Listing.objects.filter(url=listing['url']).exists():
             l.save()
+        else:
+            print('Listing exists already')
