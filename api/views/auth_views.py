@@ -16,6 +16,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 import asyncio
 from datetime import date
+from django.contrib.auth import authenticate
 # from ...backend_v3.settings import BASE_DIR
 
 import os
@@ -37,45 +38,43 @@ class SignIn(APIView):
             username = serializer.data.get('username')
             given_password = serializer.data.get('password')
 
-            users_queryset = User.objects.filter(username=username)
-            if users_queryset.exists():
-                user = users_queryset[0]
-                if user.password != given_password:
-                    print('first')
-                    return Response({'msg': 'Incorrect login details given.'}, status=status.HTTP_401_UNAUTHORIZED)
-                
-                # Successful sign in!
+            user = authenticate(username=username, password=given_password)
+            if not user:
+                print('Logging in with username didnt work, trying email')
 
-                # print('Token:', SESSION_KEY)
-                
-                # Create session if it doesn't exist already
-                if not self.request.session.exists(self.request.session.session_key):
-                    self.request.session.create()
-                    old_sessions = Session.objects.filter(username=username)
-                    if old_sessions.exists():
-                        for session in old_sessions:
-                            session.delete()
+                # Try and authenticate via email, in case they fed their email in
+                user_query = User.objects.filter(email=username)
+                if user_query.exists():
+                    user_name = user_query[0].username
+                    user = authenticate(username=user_name, password=given_password)
+                    if not user:
+                        return Response({'msg': 'Incorrect login details given.'}, status=status.HTTP_401_UNAUTHORIZED)
+                else:
+                     return Response({'msg': 'Incorrect login details given.'}, status=status.HTTP_401_UNAUTHORIZED)
+            # Successful sign in!
 
-                # Create new session (awkward way to do it)
-                # print(self.request.session.session_key)
-                # print(len(self.request.session.session_key))
-                new_session = Session(key=self.request.session.session_key, username=username)
-                new_session.save()
+            
+            # Create session if it doesn't exist already
+            if not self.request.session.exists(self.request.session.session_key):
+                self.request.session.create()
+                old_sessions = Session.objects.filter(username=username)
+                if old_sessions.exists():
+                    for session in old_sessions:
+                        session.delete()
 
-                # request.session['username'] = username
+            # Create new session (awkward way to do it)
+            new_session = Session(key=self.request.session.session_key, username=username)
+            new_session.save()
 
-                return Response({
-                                'user': {
-                                    'avatar': '',
-                                    'username': username,
-                                    'email': user.email,
-                                    'authority': user.profile.authorisations,
-                                },
-                                'token': self.request.session.session_key, # SESSION_KEY
-                                }, status=status.HTTP_200_OK) # Send the notification details to frontend
-            else:
-                print('second', username)
-                return Response({'msg': 'User name not found in database.'}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({
+                            'user': {
+                                'avatar': '',
+                                'username': username,
+                                'email': user.email,
+                                'authority': user.profile.authorisations,
+                            },
+                            'token': self.request.session.session_key, # SESSION_KEY
+                            }, status=status.HTTP_200_OK) # Send the notification details to frontend
         else:
             print('didnt pass serializer')
             return Response({'msg': 'Login request not valid.'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -120,19 +119,19 @@ class SignUp(APIView):
             given_password = serializer.data.get('password')
             given_email = serializer.data.get('email')
 
+            if len(given_password) < 8:
+                print('Password too short')
+                return Response({'message': 'Your password must be atleast 8 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
+
             users_queryset = User.objects.filter(username=username)
             if users_queryset.exists():
-                errors = [{'message': '', 'domain': "global", 'reason': "invalid"}]
-                packet = errors, {'message': 'User already exists!'}
                 print('User already exists')
-                return Response(json.dumps(packet), status=status.HTTP_400_BAD_REQUEST)
+                return Response({'message': 'User already exists!'}, status=status.HTTP_400_BAD_REQUEST)
+
             
             email_queryset = User.objects.filter(email=given_email)
             if email_queryset.exists():
-                # errors = [{'message': '', 'domain': "global", 'reason': "invalid"}]
-                # packet = errors, {'message': 'Email already in use!'}
                 print('Email already exists')
-                # print(json.dumps(packet))
                 return Response({'message': 'Email already in use!'}, status=status.HTTP_400_BAD_REQUEST)
 
             # Send stripe a message to create customer.import stripe
@@ -142,9 +141,9 @@ class SignUp(APIView):
             )
 
             new_user = User(username=username,
-                            password=given_password,
                             email = given_email,
                             )
+            new_user.set_password(given_password)
             new_user.save()
             # new_user.profile.authorisations = ['user'],
             new_user.profile.stripe_customer_id = stripe_response.id
@@ -277,7 +276,7 @@ class ResetPasswordView(APIView):
             user = reset_password.user
 
             try:
-                user.password = new_password
+                user.set_password(new_password)
                 user.save()
                 print('Updated password')
             except:
@@ -323,52 +322,24 @@ class ConfirmEmail_api(APIView):
 
 class GetEmailStatus(APIView):
     def post(self, request, format=None):
-        key = request.headers['Authorization'].split(' ')[1]
-        # Have a Serializer HERE!
-        key_query_set = Session.objects.filter(key=key)
-
-        if key_query_set.exists():
-            username = key_query_set[0].username
-
-            # Load user's details from DB
-            queryset = User.objects.filter(username=username)
-            if queryset.exists():
-                user = queryset[0]
-                print(f'User {user.username} found!')
-            else:
-                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
-
-            email_status = user.profile.email_confirmed
-            return Response({'email_status': email_status}, status=status.HTTP_200_OK)
+        user = authenticate_from_session_key(request)
+        email_status = user.profile.email_confirmed
+        return Response({'email_status': email_status}, status=status.HTTP_200_OK)
 
 
 class ResendConfirmEmail(APIView):
     def post(self, request, format=None):
-        key = request.headers['Authorization'].split(' ')[1]
-        # Have a Serializer HERE!
-        key_query_set = Session.objects.filter(key=key)
+        user = authenticate_from_session_key(request)
 
-        if key_query_set.exists():
-            username = key_query_set[0].username
+        # Delete old confirmation email object
+        old_confirm = ConfirmEmail.objects.filter(user=user)
+        if old_confirm.exists():
+            old_confirm[0].delete()
 
-            # Load user's details from DB
-            queryset = User.objects.filter(username=username)
-            if queryset.exists(): 
-                user = queryset[0]
-                print(f'User {user.username} found!')
-            else:
-                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
+        # Resend new one
+        send_email_confirmation(user)
 
-            # Delete old confirmation email object
-            old_confirm = ConfirmEmail.objects.filter(user=user)
-            if old_confirm.exists():
-                old_confirm[0].delete()
-
-            # Resend new one
-            send_email_confirmation(user)
-
-            return Response(status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+        return Response(status=status.HTTP_200_OK)
 
 
 def send_email_confirmation(user):
@@ -403,3 +374,27 @@ def send_email_confirmation(user):
         
 
 
+def authenticate_from_session_key(request):
+    """
+    Takes in request, gets the session key and finds the associated user.
+    """
+
+    key = request.headers['Authorization'].split(' ')[1]
+
+    # Have a Serializer HERE!
+    key_query_set = Session.objects.filter(key=key)
+
+    if key_query_set.exists():
+        username = key_query_set[0].username
+
+        # Load user's details from DB
+        queryset = User.objects.filter(username=username) | User.objects.filter(email=username)
+        # breakpoint()
+        if queryset.exists():
+            user = queryset[0]
+            print(f'User {user.username} found!')
+            return user
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+    
+    return Response(status=status.HTTP_401_UNAUTHORIZED)

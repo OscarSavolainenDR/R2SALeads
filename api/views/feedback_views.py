@@ -17,6 +17,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 import os
 
+from .auth_views import authenticate_from_session_key
+
 website_domain = os.getenv('WEBSITE_DOMAIN')
 
 class Feedback(APIView):
@@ -24,42 +26,30 @@ class Feedback(APIView):
 
     def post(self, request, format=None): 
 
-        key = request.headers['Authorization'].split(' ')[1]
-        key_query_set = Session.objects.filter(key=key)
+        user = authenticate_from_session_key(request)
+        
+        # SEND EMAIL WITH VERIFICATION CODE
+        print('Sending feedback', request.data)
+        feedback = request.data
 
-        if key_query_set.exists():
-            username = key_query_set[0].username
+        subject = "Feedback - R2SA Leads"
+        email_template_name = "email_templates/feedback_email.txt"
+        c = {
+            "email": "contact@r2sa-leads.co.uk",
+            'domain': website_domain, 
+            'site_name': 'Website',
+            "user": user.username,
+            "user_email": user.email,
+            'content': feedback,
+            'protocol': 'http',
+        }
+        email = render_to_string(email_template_name, c)
+        try:   
+            send_mail(subject, email, 'contact@r2sa-leads.co.uk' , ["contact@r2sa-leads.co.uk"], fail_silently=False)
+            print(f"Email sent successfully for user {user.email}")
+        except Exception as e:
+            print(e)
+            print('Sending feedback email failed')
+        return Response(status=status.HTTP_200_OK)
 
-            queryset = User.objects.filter(username=username)
-            if queryset.exists():
-                user = queryset[0]
-                print(f'User {user.username} found!')
-            else:
-                return Response({'msg': f'User {username} not a valid user'}, status=status.HTTP_401_UNAUTHORIZED) 
-
-            # SEND EMAIL WITH VERIFICATION CODE
-            print('Sending feedback', request.data)
-            feedback = request.data
-
-            subject = "Feedback - R2SA Leads"
-            email_template_name = "email_templates/feedback_email.txt"
-            c = {
-                "email": "contact@r2sa-leads.co.uk",
-                'domain': website_domain, 
-                'site_name': 'Website',
-                "user": user.username,
-                "user_email": user.email,
-                'content': feedback,
-                'protocol': 'http',
-            }
-            email = render_to_string(email_template_name, c)
-            try:   
-                send_mail(subject, email, 'contact@r2sa-leads.co.uk' , ["contact@r2sa-leads.co.uk"], fail_silently=False)
-                print(f"Email sent successfully for user {user.email}")
-            except Exception as e:
-                print(e)
-                print('Sending feedback email failed')
-            return Response(status=status.HTTP_200_OK
-                            )
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
 
