@@ -24,7 +24,7 @@ export const addCityToBasket = async (data) => {
 export const initialTableData = {
     total: 0,
     pageIndex: 1,
-    pageSize: 10,
+    pageSize: 100,
     query: '',
     sort: {
         order: '',

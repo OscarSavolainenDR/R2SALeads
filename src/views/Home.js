@@ -13,6 +13,9 @@ const Home = () => {
 			<span style={{ fontSize: '18px'}}>
 				<br/>
 				<h5>
+					DO NOT USE, IN TEST MODE.
+				</h5>
+				<h5>
 					Here at Rent 2 SA Leads, we believe in helping you scale your R2SA business.
 				</h5>
 				

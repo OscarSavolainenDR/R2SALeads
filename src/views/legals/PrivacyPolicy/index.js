@@ -147,7 +147,7 @@ const PrivacyPolicy = () => {
                             </td>
                             <td valign="top">
                                 <p>
-                                    the website that you are currently using, www.r2sa.co.uk,
+                                    the website that you are currently using, www.r2sa-leads.co.uk or www.r2sa-leads.com,
                                     and any sub-domains of this site unless expressly excluded
                                     by their own terms and conditions.
                                 </p>
@@ -344,13 +344,15 @@ const PrivacyPolicy = () => {
                 <p>
                     c. payment details are encrypted using SSL technology (typically you will
                     see a lock icon or green address bar (or both) in your browser when we use
-                    this technology.
+                    this technology). Furthermore, all payments are gathered and processed by 
+                    Stripe, Inc., a third party payment portal. We are not responsible for any 
+                    of your financial details, as we never see them.
                 </p>
                 <p>
                     14. Technical and organisational measures include measures to deal with any
                     suspected data breach. If you suspect any misuse or loss or unauthorised
                     access to your Data, please let us know immediately by contacting us via
-                    this e-mail address: oscar@sav-estates.co.uk.
+                    this e-mail address: contact@r2sa-leads.co.uk.
                 </p>
                 <p>
                     15. If you want detailed information from Get Safe Online on how to protect
@@ -412,7 +414,7 @@ const PrivacyPolicy = () => {
                     19. To make enquiries, exercise any of your rights set out above, or
                     withdraw your consent to the processing of your Data (where consent is our
                     legal basis for processing your Data), please contact us via this e-mail
-                    address: oscar@sav-estates.co.uk.
+                    address: contact@r2sa-leads.co.uk.
                 </p>
                 <p>
                     20. If you are not satisfied with the way a complaint you make in relation
@@ -524,7 +526,7 @@ const PrivacyPolicy = () => {
                     Website following the alterations.
                     <br/>
                     <br/>
-                    You may contact R2SA Leads Limited by email at oscar@sav-estates.co.uk.
+                    You may contact R2SA Leads Limited by email at contact@r2sa-leads.co.uk.
                 </p>
                 <br />
                 <p>
