@@ -152,6 +152,11 @@ def load_and_store_new_listings(city_name, today):
         # and treat it as a new listing)
         check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
         if check_if_already_in_DB.exists():
+            if check_if_already_in_DB[0].excel_sheet != int(listing["excel_sheet"].split('Listing_',1)[1]):
+                print(f'wrong index, is {check_if_already_in_DB[0].excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
+                # breakpoint()
+                check_if_already_in_DB[0].excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
+            
             # If rent is the same, skip
             if check_if_already_in_DB[0].rent == listing['rent']:
                 continue
