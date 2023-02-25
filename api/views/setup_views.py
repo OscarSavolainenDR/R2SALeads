@@ -159,7 +159,7 @@ def load_and_store_new_listings(city_name, today):
                 existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
                 existing_DB_listing.save()
             # If rent is the same, skip
-            if existing_DB_listing.rent == listing['rent']:
+            if existing_DB_listing.rent == int(listing['rent']):
                 continue
             # Otherwise delete the listing, go again
             else:
@@ -204,3 +204,4 @@ def load_and_store_new_listings(city_name, today):
             l.save()
         else:
             print('Listing exists already')
+y
