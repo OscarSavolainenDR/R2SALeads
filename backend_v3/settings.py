@@ -163,6 +163,17 @@ CORS_ORIGIN_WHITELIST = [
     'https://r2sa-leads.com',
     'https://www.r2sa-leads.com']
 
+
+# REDIS related settings
+REDIS_HOST = 'localhost'
+REDIS_PORT = '6379'
+CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+CELERY_TASK_SERIALIZER='json'
+
+# for Heroku
+CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
+CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
+
 # May need to replace with django_on_heroku, maintained package
 import django_heroku
 django_heroku.settings(locals())

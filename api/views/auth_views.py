@@ -18,6 +18,7 @@ import asyncio
 from datetime import date
 from django.contrib.auth import authenticate
 # from ...backend_v3.settings import BASE_DIR
+from .celery_tasks import send_email_confirmation_celery
 
 import os
 import stripe
@@ -166,7 +167,8 @@ class SignUp(APIView):
             new_user.save()
 
             # NOTE: Send email confirmation to them.
-            send_email_confirmation(new_user)
+            # send_email_confirmation(new_user)
+            send_email_confirmation_celery(json.dumps(new_user))
 
             packet = {
                 'username': username,
@@ -337,7 +339,8 @@ class ResendConfirmEmail(APIView):
             old_confirm[0].delete()
 
         # Resend new one
-        send_email_confirmation(user)
+        # send_email_confirmation(user)
+        send_email_confirmation_celery(json.dumps(user))
 
         return Response(status=status.HTTP_200_OK)
 

@@ -29,6 +29,18 @@ class InitDB(APIView):
 
         # NOTE: Add authorisation here, only if code is accepted.
 
+        # Get all ciities currently in DB
+        cities_in_DB = City.objects.all()
+        cities_in_DB = [city.name for city in cities_in_DB]
+
+        # Get all cities in provided variable
+        city_names = [city['name'] for city in cities]
+
+        # Delete cities in DB that aren't in the provided cities variable
+        for city_in_DB in cities_in_DB:
+            if city_in_DB not in city_names:
+                city_in_DB.delete()
+
         for city in cities:
             if type(city) is tuple:
                 city = city[0]
@@ -62,15 +74,6 @@ class InitDB(APIView):
             city = City.objects.filter(name=city['name'])[0]
             admin.profile.cities.add(city)
             admin.save()
-
-        # Notifications
-
-        # # Check if database already has these, if so skip
-        # notification_queryset = Notification.objects.filter(userName='Tim')
-        # if not notification_queryset.exists():
-        #     for i in range(3):
-        #         notification = Notification(userName='Tim', description=f'test_{i}')
-        #         notification.save()
             
         return Response(status=status.HTTP_200_OK)
   
