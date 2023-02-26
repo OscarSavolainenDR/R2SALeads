@@ -9,7 +9,6 @@ import os
 import json
 import numpy as np
 
-from .setup_views import financial_logic
 
 # from celery import shared_task
 from backend_v3.celery import app
@@ -29,7 +28,6 @@ def send_email_confirmation_celery(pk):
 
     # If token has already been used
     email_confirm = ConfirmEmail(token=token, uid=uid, user=user)
-    # breakpoint()
     email_confirm.save()
 
     # SEND EMAIL WITH VERIFICATION CODE
@@ -42,7 +40,7 @@ def send_email_confirmation_celery(pk):
         "uid": uid,
         "user": user,
         'token': token,
-        'protocol': 'http',
+        'protocol': 'https',
     }
     email = render_to_string(email_template_name, c)
     try:   
@@ -128,6 +126,23 @@ def load_and_store_new_listings_celery(city_name, today):
                 l.save()
             else:
                 print('Listing exists already')
+
+@app.task
+def update_listings_for_users_2():
+    """
+    Fast version. Add all the new listing we have to their repsective users.
+    """
+    # Add new listings to Users
+    print('Adding new listings to users, in celery')
+    for user in User.objects.filter(): 
+        listings_user_already_has = user.profile.user_listings.all()
+        for city in user.profile.cities.all():
+            new_listing_set = Listing.objects.filter(city=city).difference(listings_user_already_has.filter(city=city))
+            for listing in new_listing_set:
+                user.profile.user_listings.add(listing)
+        user.save()
+
+        print(f"Finished {user.username}")
 
 
 @app.task

@@ -156,7 +156,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ORIGIN_WHITELIST = [
-    'https://localhost:3000',
+    # 'https://localhost:3000',
     'https://r2sa-v1-frontend.herokuapp.com',
     'https://r2sa-leads.co.uk',
     'https://www.r2sa-leads.co.uk',

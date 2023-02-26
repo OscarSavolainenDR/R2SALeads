@@ -15,7 +15,7 @@ import os
 import numpy as np
 
 from .auth_views import authenticate_from_session_key
-from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users, financial_logic
+from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users_2, financial_logic
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
@@ -59,7 +59,6 @@ class InitDB(APIView):
                 city_elem.country = city['country']
                 city_elem.stripe_subscription_code = city['stripe_subscription_code']
                 city_elem.save()
-
       
         if not User.objects.filter(username='admin').exists():
             admin = User(username='admin',
@@ -84,17 +83,18 @@ class UpdateListings(APIView):
     @csrf_exempt
     def post(self, request, format=None):
 
+        print(f'request: {request}')
+
         # Make sure only requests with the code get through
         # if request.data['code'] == 'update':
         #     pass
             
-        # load_and_store_new_listings('London')
         for city in cities:
             if type(city) is tuple:
                 city = city[0]
             load_and_store_new_listings_celery(city['name'], self.today)
 
-        update_listings_for_users(self.today)
+        update_listings_for_users_2()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -201,8 +201,6 @@ def load_and_store_new_listings(city_name, today):
             l.save()
         else:
             print('Listing exists already')
-
-
 
 def load_and_store_new_listings_2(city_name, today):
     # Load new listings
