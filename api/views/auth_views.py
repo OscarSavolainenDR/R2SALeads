@@ -168,7 +168,7 @@ class SignUp(APIView):
 
             # NOTE: Send email confirmation to them.
             # send_email_confirmation(new_user)
-            send_email_confirmation_celery(json.dumps(new_user))
+            send_email_confirmation_celery(new_user.pk)
 
             packet = {
                 'username': username,
@@ -341,9 +341,7 @@ class ResendConfirmEmail(APIView):
         # Resend new one
         # send_email_confirmation(user)
         print('Got to here')
-        serialized = json.dumps(user)
-        print('Then here')
-        send_email_confirmation_celery(serialized)
+        send_email_confirmation_celery(user.pk)
 
         return Response(status=status.HTTP_200_OK)
 

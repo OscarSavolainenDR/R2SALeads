@@ -1,5 +1,5 @@
 from __future__ import absolute_import, unicode_literals
-from ..models import ConfirmEmail
+from ..models import ConfirmEmail, User
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
@@ -15,10 +15,10 @@ website_domain = os.getenv('WEBSITE_DOMAIN')
 
 
 @app.task
-def send_email_confirmation_celery(user):
+def send_email_confirmation_celery(pk):
 
-    print('deserializing')
-    user = json.loads(user)
+    print('Getting user')
+    user = User.objects.filter(pk=pk)[0]
 
     print('Running on Celery')
     uid = urlsafe_base64_encode(force_bytes(user.pk))
