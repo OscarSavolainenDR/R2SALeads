@@ -19,7 +19,7 @@ for ((i = 1; i <= num_iterations; i++)); do
 done
 =======
 # Your command goes here
-your_command='rm To_dos.txt; find . -type f -name "__pycache__" -delete; git add . ; git commit --amend --no-edit ; git rebase --continue'
+your_command="rm To_dos.txt; find . -type f -name '__pycache__' -delete; git add . ; git commit --amend --no-edit ; git rebase --continue"
 
 # Number of times to run the command
 num_iterations=50
