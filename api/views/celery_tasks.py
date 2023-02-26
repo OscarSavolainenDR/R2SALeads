@@ -7,6 +7,7 @@ from django.utils.encoding import force_bytes
 from django.core.mail import send_mail
 import os
 import json
+import numpy as np
 
 from .setup_views import financial_logic
 
@@ -151,3 +152,20 @@ def update_listings_for_users(today):
                     #             user.profile.authorised_listings_leads.append(listing.id)
                 user.save()
                 print(f"Finished {user.username}")
+
+
+def financial_logic(listing):
+    bedrooms = listing['bedrooms']
+    profit = int(0.6 * (listing['mean_income'] - listing['rent']))
+
+    breakeven_occupancy = int((listing['mean_income'] - profit) / listing['mean_income'] * 100)
+    round_profit = np.floor(profit / 1000 )  # profit in 1000's
+    
+    if round_profit == 0: # If lower than 1000, give profit in 100s
+        round_profit = int(np.floor(profit / 100 ))  # profit in 1000's
+        labels = [f'{bedrooms} bed', f'{round_profit}00+ profit']
+    else:
+        labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
+    
+    # print(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
+    return bedrooms, breakeven_occupancy, profit, labels

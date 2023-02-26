@@ -15,7 +15,7 @@ import os
 import numpy as np
 
 from .auth_views import authenticate_from_session_key
-from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users
+from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users, financial_logic
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
@@ -277,20 +277,3 @@ def load_and_store_new_listings_2(city_name, today):
                 l.save()
             else:
                 print('Listing exists already')
-
-def financial_logic(listing):
-    bedrooms = listing['bedrooms']
-    profit = int(0.6 * (listing['mean_income'] - listing['rent']))
-
-    breakeven_occupancy = int((listing['mean_income'] - profit) / listing['mean_income'] * 100)
-    round_profit = np.floor(profit / 1000 )  # profit in 1000's
-    
-    if round_profit == 0: # If lower than 1000, give profit in 100s
-        round_profit = int(np.floor(profit / 100 ))  # profit in 1000's
-        labels = [f'{bedrooms} bed', f'{round_profit}00+ profit']
-    else:
-        labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
-    
-    # print(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
-        
-    return bedrooms, breakeven_occupancy, profit, labels
