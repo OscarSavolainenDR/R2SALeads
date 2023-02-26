@@ -15,6 +15,7 @@ import os
 import numpy as np
 
 from .auth_views import authenticate_from_session_key
+from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
@@ -91,26 +92,9 @@ class UpdateListings(APIView):
         for city in cities:
             if type(city) is tuple:
                 city = city[0]
-            load_and_store_new_listings_2(city['name'], self.today)
+            load_and_store_new_listings_celery(city['name'], self.today)
 
-        # Add new listings to Users
-        print('Adding new listings to users')
-        for listing in Listing.objects.filter():
-            # Runs once a day, should catch all new ones.
-            # Although more robust to go through all listings
-            if listing.created_at <= self.today:
-                # print('Listing:', listing.url, listing.id)
-                for user in User.objects.filter(): 
-                    if user.profile.cities.filter(name=listing.city.name).exists():
-                        # print(f'Adding listings to {user.username} leads list')
-                        if listing not in user.profile.user_listings.all():
-                            # NOTE: need to set listing status to 0 for that user.
-                            user.profile.user_listings.add(listing)
-                        # if listing.id not in user.profile.authorised_listings_leads:
-                        #     if listing.id not in user.profile.authorised_listings_contacted:
-                        #         if listing.id not in user.profile.authorised_listings_booked:
-                        #             user.profile.authorised_listings_leads.append(listing.id)
-                    user.save()
+        update_listings_for_users(self.today)
 
         return Response(status=status.HTTP_200_OK)
 
