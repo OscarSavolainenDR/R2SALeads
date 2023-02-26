@@ -150,3 +150,4 @@ def update_listings_for_users(today):
                     #         if listing.id not in user.profile.authorised_listings_booked:
                     #             user.profile.authorised_listings_leads.append(listing.id)
                 user.save()
+                print(f"Finished {user.username}")
