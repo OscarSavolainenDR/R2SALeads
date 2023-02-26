@@ -340,7 +340,10 @@ class ResendConfirmEmail(APIView):
 
         # Resend new one
         # send_email_confirmation(user)
-        send_email_confirmation_celery(json.dumps(user))
+        print('Got to here')
+        serialized = json.dumps(user)
+        print('Then here')
+        send_email_confirmation_celery(serialized)
 
         return Response(status=status.HTTP_200_OK)
 
