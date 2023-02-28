@@ -76,5 +76,11 @@ export const protectedRoutes = [
             headerContainer: true
         }
     },
+    {
+        key: 'confirmEmail',
+        path: `${APP_PREFIX_PATH}/confirm-email/:uid/:token`,
+        component: React.lazy(() => import('views/auth/EmailConfirmed')),
+        authority: [ADMIN, USER],
+    }
 
 ]

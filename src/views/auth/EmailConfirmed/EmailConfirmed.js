@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 
 
 const EmailConfirmed = () => {
+
+	console.log('Here')
 	
 	const [confirmed, setConfirmed] = useState(true);
     const { uid, token } = useParams()
