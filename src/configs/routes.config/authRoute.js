@@ -26,7 +26,7 @@ const authRoute = [
         authority: [],
     },
     {
-        key: 'confirmEmail',
+        key: 'confirmEmail_not_auth',
         path: `/confirm-email/:uid/:token`,
         component: React.lazy(() => import('views/auth/EmailConfirmed')),
         authority: [],

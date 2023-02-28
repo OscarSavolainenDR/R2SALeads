@@ -9,21 +9,21 @@ const Home = () => {
 
 	return (
 		<div>
-			<h3>Welcome to Rent 2 SA Leads!</h3>
+			<h3>Welcome to R2SA Leads!</h3>
 			<span style={{ fontSize: '18px'}}>
 				<br/>
 				<h5>
 					DO NOT USE, IN TEST MODE.
 				</h5>
 				<h5>
-					Here at Rent 2 SA Leads, we believe in helping you scale your R2SA business.
+					Here at R2SA Leads, we believe in helping you scale your Rent to Serviced Accommodation business.
 				</h5>
 				
 				<br />
 				Spend less time searching for properties on OpenRent, Gumtree, Zoopla, etc., and more time growing your business!
 				<br />
 				<br />
-				Rent 2 SA Leads works by scanning all of the top rental websites, and comparing their listings to nearby SAs.
+				R2SA Leads works by scanning all of the top rental websites, and comparing their listings to nearby SAs.
 				<br />
 				For each listing, we do all of the due diligence. We then upload all of the properties that will work well as SAs to your dashboard!
 				<br />

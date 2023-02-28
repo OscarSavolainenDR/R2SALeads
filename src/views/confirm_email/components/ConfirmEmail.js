@@ -35,7 +35,7 @@ const ConfirmEmail = () => {
 	  });
 
 	const message = "To subscribe to a city and checkout to receive leads, we highly advise you confirm your email. \
-	To confirm your email, please go to your signup email's inbox (check spam folder)."
+	To confirm your email, please go to your signup email's inbox (check spam folder). It is generally best to sign out before you confirm your email."
 	// const getStatus = async () => {
 
 	// 	// Make API call, check email confirmation status
