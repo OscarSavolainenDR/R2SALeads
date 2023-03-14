@@ -34,8 +34,13 @@ class InitDB(APIView):
         cities_in_DB = City.objects.all()
         cities_in_DB = [city.name for city in cities_in_DB]
 
-        # Get all cities in provided variable
-        city_names = [city['name'] for city in cities]
+        city_names = []
+        for city in cities:
+            if type(city) is tuple:
+                city = city[0]
+
+            # Get all cities in provided variable
+            city_names.append(city['name'])
 
         # Delete cities in DB that aren't in the provided cities variable
         for city_in_DB in cities_in_DB:

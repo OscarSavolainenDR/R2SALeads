@@ -18,7 +18,7 @@ import asyncio
 from datetime import date
 from django.contrib.auth import authenticate
 # from ...backend_v3.settings import BASE_DIR
-from .celery_tasks import send_email_confirmation_celery
+from .celery_tasks import send_email_confirmation_celery,update_listings_for_one_user
 
 import os
 import stripe
@@ -159,12 +159,7 @@ class SignUp(APIView):
             Subscription.objects.create(user=new_user.profile, city=city)
 
             # Add new listings to User
-            for listing in Listing.objects.filter(city=city):
-                if listing.created_at <= date.today():
-                    if listing not in new_user.profile.user_listings.all():
-                        # NOTE: need to set listing status to 0 for that user.
-                        new_user.profile.user_listings.add(listing)
-            new_user.save()
+            update_listings_for_one_user(new_user)
 
             # NOTE: Send email confirmation to them.
             # send_email_confirmation(new_user)
