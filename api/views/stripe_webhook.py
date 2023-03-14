@@ -9,6 +9,18 @@ from .celery_tasks import update_listings_for_one_user
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+file_handler = logging.FileHandler(os.path.join('logs','stripe_webhook.log'))
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
+
 # Using Django
 @csrf_exempt
 def stripe_webhook(request):
@@ -25,7 +37,8 @@ def stripe_webhook(request):
             payload, sig_header, webhook_secret
         )
     except Exception as e:
-        print(e)
+        logger.error('Failed to construct webhook event')
+        logger.debug(e)
         # Invalid payload
         return HttpResponse(status=400)
 
@@ -41,15 +54,18 @@ def stripe_webhook(request):
         # ... handle other event types
 
     elif event.type == 'customer.created':
-        print('Customer created, yay')
+        logger.info('Customer created, yay')
+        logger.info(event)
         # customer_email = event.data.object.email
         # cusotmer_id = event.data.object.id
 
     elif event.type == 'customer.subscription.deleted':
-        print('Subscription deleted')
+        logger.info('Subscription deleted')
+        logger.info(event)
         # print(event)
     elif event.type == 'customer.subscription.created':
-        print('Subscription created')
+        logger.info('Subscription created')
+        logger.info(event)
         # customer_id = event.data.object.customer
         # subscription_id = event.data.object.id
         # from ..models import Profile, City, Subscription
@@ -69,69 +85,63 @@ def stripe_webhook(request):
         # breakpoint()
         # print(event)
     elif event.type == 'customer.subscription.updated':
-        print('Subscription updated')
+        logger.info('Subscription updated')
+        logger.info(event)
         # breakpoint()
     elif event.type == 'invoice.payment_failed':
-        print('Payment failed')
+        logger.info('Payment failed')
+        logger.info(event)
     elif event.type == 'invoice.payment_succeeded':
-        print('Payment succeeded')
+        logger.info('Payment succeeded')
+        logger.info(event)
 
-        print('We confirm their subscription')
+        logger.info('We confirm their subscription')
         # print(event)
         customer_id = event.data.object.customer
         customer_email = event.data.object.customer_email
         from ..models import Profile, City, Subscription, User, Listing
 
         # We find user form customer id
-        print('Customer ID:', customer_id, '; Email:', customer_email)
+        logger.info('Customer ID:', customer_id, '; Email:', customer_email)
         # queryset = User.objects.filter(profile__stripe_customer_id=customer_id)
         queryset = User.objects.filter(email=customer_email)
         if queryset.exists():
             user = queryset[0]
-            print('User:', user.email)
+            logger.info('Found corresponding user:', user.email)
         else:
-            print('User not found')
+            logger.error('User not found')
 
         # We iterate through subscriptions, add them to user
         # print('Lines:', event.data.object.lines.data)
         for elem in event.data.object.lines.data:
             # Price code
-            print('price code', elem.price.id)
+            # print('price code', elem.price.id)
             subscription_id = elem.subscription_item
             city_queryset = City.objects.filter(stripe_subscription_code=elem.price.id)
             if city_queryset.exists():
                 city = city_queryset[0]
-                print(f'City {city.name} identified')
-                print('subscription id', subscription_id)
+                # print(f'City {city.name} identified')
+                # print('subscription id', subscription_id)
+
+                logger.info(f"Creating subscription for {user.username} for {city.name}")
 
                 # Create subscription
                 if not Subscription.objects.filter(user=user.profile, city=city).exists():
                     Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=subscription_id)
-                print('We got here')
+                logger.info(f"Subscription option created for {user.username} for {city.name}")
 
                 # Delete from basket
                 user.profile.cities_basket.remove(city)
+                logger.info(f"Deleted {city.name} from basket for {user.username}")
 
-                print('User basket', user.profile.cities_basket)
-                print('User cities', user.profile.cities)
+                logger.info('{user.username} basket', user.profile.cities_basket)
+                logger.info('{user.username} cities', user.profile.cities)
 
-                print('Adding listings to user')
-                update_listings_for_one_user(user)
-                #  # Add new listings to User
-                # for listing in Listing.objects.filter(city=city):
-                #     if listing.created_at <= date.today():
-                #         if listing not in user.profile.user_listings.all():
-                #             # NOTE: need to set listing status to 0 for that user.
-                #             user.profile.user_listings.add(listing)
-                user.save()
+        update_listings_for_one_user(user)
+        user.save()
         
-        print('all user cities', user.profile.cities.all())
+        logger.info('All {user.username} cities:', user.profile.cities.all())
 
     else:
-        print('Unhandled event type {}'.format(event.type))
-
-
-    # breakpoint()
-    # print(event)
-
+        logger.debug('Unhandled event type {}'.format(event.type))
     return HttpResponse(status=200)

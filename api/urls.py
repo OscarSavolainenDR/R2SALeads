@@ -1,11 +1,11 @@
 # Stores all urls local to this app (api)
 from django.urls import path
 from .views.setup_views import InitDB, UpdateListings
-from .views.project_views import GetScrumBoard, GetScrumBoardMembers, UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
+from .views.project_views import UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResendConfirmEmail, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
 from .views.notification_views import GetNotifications, GetNotificationCount
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
-from .views.subscription_views import GetBasket, CheckoutBasket, StripeCheckout, CreateStripePaymentIntent#, SaveStripeInfo
+from .views.subscription_views import GetBasket, CheckoutBasket#, StripeCheckout #, CreateStripePaymentIntent#, SaveStripeInfo
 from .views.account_views import GetAccountSettingsData, GetAccountSettingsBillingData, UpdatePassword
 from .views.stripe_webhook import stripe_webhook
 from .views.test_views import Test 
@@ -19,8 +19,7 @@ urlpatterns = [
     path('update-listings', UpdateListings.as_view()),
 
     # Project URLs
-    path('project/scrum-board/boards', GetScrumBoard.as_view()),
-    path('project/scrum-board/members', GetScrumBoardMembers.as_view()),
+    # path('project/scrum-board/boards', GetScrumBoard.as_view()),
     path('project/scrum-board/update-backend', UpdateScrumBoardBackend.as_view()),
     path('project/scrum-board/download-excel', DownloadExcel.as_view()),
     path('project/leads-list/update-backend', UpdateLeadsListBackend.as_view()),
@@ -36,7 +35,7 @@ urlpatterns = [
     path('subscriptions/unsubscribe', UnsubscribeFromCity.as_view()),
     path('subscriptions/add-to-basket', AddCitytoBasket.as_view()),
     path('subscriptions/get-basket', GetBasket.as_view()),
-    path('subscriptions/stripe-checkout', StripeCheckout.as_view()), # old version
+    # path('subscriptions/stripe-checkout', StripeCheckout.as_view()), # old version
     # path('subscriptions/checkout', CreateStripePaymentIntent.as_view()),
     path('subscriptions/checkout', CheckoutBasket.as_view()),
     # path('subscriptions/save-stripe-info', SaveStripeInfo.as_view()),    

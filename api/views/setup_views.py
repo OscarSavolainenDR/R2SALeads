@@ -16,11 +16,21 @@ import numpy as np
 
 from .auth_views import authenticate_from_session_key
 from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users_2, financial_logic
-
+ 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
-
+ 
 from .cities import cities as cities
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+file_handler = logging.FileHandler('logs/setup.log')
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
 
 ## Just for filling the DB with dummy data, can be adapted later for actually updating the DB.
 class InitDB(APIView):
@@ -28,7 +38,21 @@ class InitDB(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
 
-        # NOTE: Add authorisation here, only if code is accepted.
+        import unicodedata
+        
+
+        # Checks authorisation here, only continues if the code is accepted.
+        try:
+            auth = json.loads(request.body)
+            given_auth_key = auth['auth_key']
+        except:
+            logger.error('Incorrect auth key given during InitDB')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        # Incorrect auth key was given
+        if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info('Correct auth key given, running Init DB')
 
         # Get all ciities currently in DB
         cities_in_DB = City.objects.all()
@@ -58,7 +82,7 @@ class InitDB(APIView):
                 city_elem.save()
             # If already exists, just update the city (since pricing may change).
             else:
-                print(f"Updating city {city['name']}")
+                logger.info(f"Updating city {city['name']}")
                 city_elem = city_query[0]
                 city_elem.price = city['price']
                 city_elem.country = city['country']
@@ -88,12 +112,19 @@ class UpdateListings(APIView):
     @csrf_exempt
     def post(self, request, format=None):
 
-        print(f'request: {request}')
-
-        # Make sure only requests with the code get through
-        # if request.data['code'] == 'update':
-        #     pass
+        # Checks authorisation here, only continues if the code is accepted.
+        try:
+            auth = json.loads(request.body)
+            given_auth_key = auth['auth_key']
+        except:
+            logger.error('Incorrect auth key given during UpdateListings')
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        # Incorrect auth key was given
+        if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
             
+        logger.info('Correct auth key given, running UpdateListings')
+
         for city in cities:
             if type(city) is tuple:
                 city = city[0]
@@ -107,11 +138,11 @@ class UpdateListings(APIView):
 def load_and_store_new_listings(city_name, today):
     # Load new listings
     try:
-        print(city_name)
-        with open('json_data_' + city_name + '.json') as json_file:
+        logger.info(f'Updating {city_name} listings')
+        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
             all_listings = json.load(json_file)
     except:
-        print(city_name, 'failed')
+        logger.exception(f'Updating {city_name} listings failed')
         return
 
     # # If existing listing is expired, delete. 
@@ -137,7 +168,7 @@ def load_and_store_new_listings(city_name, today):
             if db_listing.url not in all_urls_in_json:
                 db_listing.delete()
     except Exception as e:
-        print(e)
+        logger.exception("Wasn't able to delete old listings")
         return
 
     # Store in DB if new
@@ -149,7 +180,7 @@ def load_and_store_new_listings(city_name, today):
         if check_if_already_in_DB.exists():
             existing_DB_listing = check_if_already_in_DB[0]
             if existing_DB_listing.excel_sheet != int(listing["excel_sheet"].split('Listing_',1)[1]):
-                print(f'wrong index, is {existing_DB_listing.excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
+                logger.error(f'wrong index, is {existing_DB_listing.excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
                 # breakpoint()
                 existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
                 
@@ -165,7 +196,7 @@ def load_and_store_new_listings(city_name, today):
                 continue
             # Otherwise delete the listing, go again
             else:
-                print(f"Deleted listing {existing_DB_listing.excel_sheet}")
+                logger.info(f"Deleted listing {existing_DB_listing.excel_sheet}")
                 existing_DB_listing.delete()
                 # Could have a listing['reduced'] = True here, and do something with that to signal to front end listing is reduced
 
@@ -185,7 +216,7 @@ def load_and_store_new_listings(city_name, today):
             labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
         
         # print( f"Postcode: {listing['postcode']} - £{profit}/month")
-        print(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
+        logger.info(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
         l = Listing(
                 city = city,
                 postcode = f"{listing['postcode']}",
@@ -205,17 +236,17 @@ def load_and_store_new_listings(city_name, today):
         if not Listing.objects.filter(url=listing['url']).exists():
             l.save()
         else:
-            print('Listing exists already')
+            logger.info(f"Not adding listing {listing['url']} to DB: Listing exists already")
 
 def load_and_store_new_listings_2(city_name, today):
     # Load new listings
     try:
-        print(city_name)
-        with open('json_data_' + city_name + '.json') as json_file:
+        logger.info(f'Updating {city_name} listings')
+        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
             all_listings = json.load(json_file)
     except:
-        print(city_name, 'failed')
-        return
+        logger.exception(f'Updating {city_name} listings failed')
+        return 
 
     # Find all DB listings in the given city
     city = City.objects.filter(name=city_name)[0]
@@ -228,7 +259,7 @@ def load_and_store_new_listings_2(city_name, today):
             if db_listing.url not in all_urls_in_json:
                 db_listing.delete()
     except Exception as e:
-        print(e)
+        logger.exception(f"Wasn't able to delete old listings, exception: {e}")
         return
 
     # Store in DB if new
@@ -279,4 +310,4 @@ def load_and_store_new_listings_2(city_name, today):
             if not Listing.objects.filter(url=listing['url']).exists():
                 l.save()
             else:
-                print('Listing exists already')
+                logger.exception(f'Updating {city_name} listings failed')

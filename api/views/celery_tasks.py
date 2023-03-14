@@ -13,20 +13,40 @@ import numpy as np
 # from celery import shared_task
 from backend_v3.celery import app
 
-website_domain = os.getenv('WEBSITE_DOMAIN')
+website_domain = os.getenv('WEBSITE_DOMAIN') 
+
+
+import logging
+auth_logger = logging.getLogger(__name__)
+auth_logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+file_handler = logging.FileHandler(os.path.join('logs','auth.log'))
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+auth_logger.addHandler(file_handler)
+auth_logger.addHandler(stream_handler)
+
+
+setup_logger = logging.getLogger(__name__)
+setup_logger.setLevel(logging.INFO)
+file_handler = logging.FileHandler(os.path.join('logs','setup.log'))
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+setup_logger.addHandler(file_handler)
+setup_logger.addHandler(stream_handler)
 
 
 @app.task
 def send_email_confirmation_celery(pk):
 
-    print('Getting user')
+    auth_logger.info('Creating confirm email token')
     user = User.objects.filter(pk=pk)[0]
 
-    print('Running on Celery')
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
 
-    # If token has already been used
     email_confirm = ConfirmEmail(token=token, uid=uid, user=user)
     email_confirm.save()
 
@@ -36,7 +56,6 @@ def send_email_confirmation_celery(pk):
     c = {
         "email": user.email,
         'domain': website_domain, 
-        'site_name': 'Website',
         "uid": uid,
         "user": user,
         'token': token,
@@ -44,23 +63,24 @@ def send_email_confirmation_celery(pk):
     }
     email = render_to_string(email_template_name, c)
     try:   
+        auth_logger.info(f"Sending email for user {user.email}")
         send_mail(subject, email, 'contact@r2sa-leads.co.uk' , [user.email], fail_silently=False)
-        print(f"Email sent successfully for user {user.email}")
+        auth_logger.info(f"Email sent successfully for user {user.email}")
     except Exception as e:
-        print(e)
-        print('Sending confirmation email failed')
-        user.delete()
+        auth_logger.error(e)
+        auth_logger.error('Sending confirmation email failed')
+        email_confirm.delete()
 
 
 @app.task
 def load_and_store_new_listings_celery(city_name, today):
     # Load new listings
     try:
-        print(city_name)
-        with open('json_data_' + city_name + '.json') as json_file:
+        setup_logger.info(city_name)
+        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
             all_listings = json.load(json_file)
     except:
-        print(city_name, 'failed')
+        setup_logger.error(city_name, 'failed')
         return
 
     # Find all DB listings in the given city
@@ -74,7 +94,8 @@ def load_and_store_new_listings_celery(city_name, today):
             if db_listing.url not in all_urls_in_json:
                 db_listing.delete()
     except Exception as e:
-        print(e)
+        setup_logger.error('Failed to update listings in {city_name}')
+        setup_logger.info(e)
         return
 
     # Store in DB if new
@@ -125,7 +146,7 @@ def load_and_store_new_listings_celery(city_name, today):
             if not Listing.objects.filter(url=listing['url']).exists():
                 l.save()
             else:
-                print('Listing exists already')
+                setup_logger.error(f"Listing {listing['url']} exists already")
 
 @app.task
 def update_listings_for_users_2():
@@ -133,7 +154,7 @@ def update_listings_for_users_2():
     Fast version. Add all the new listing we have to their repsective users.
     """
     # Add new listings to Users
-    print('Adding new listings to users, in celery')
+    setup_logger.info('Adding new listings to users, in celery')
     for user in User.objects.filter(): 
         listings_user_already_has = user.profile.user_listings.all()
         for city in user.profile.cities.all():
@@ -142,7 +163,7 @@ def update_listings_for_users_2():
                 user.profile.user_listings.add(listing)
         user.save()
 
-        print(f"Finished {user.username}")
+        setup_logger.info(f"Finished {user.username}")
 
 
 @app.task
@@ -151,43 +172,22 @@ def update_listings_for_one_user(user):
     Fast version. Add all the new listing we have to a user.
     """
     # Add new listings to Users
-    print('Adding new listings to user, in celery')
+    setup_logger.info(f'Adding new listings to {user.username}, in celery')
     listings_user_already_has = user.profile.user_listings.all()
     for city in user.profile.cities.all():
-        print(f'Adding {city.name} to {user.username}')
+        setup_logger.info(f'Adding {city.name} to {user.username}')
         new_listing_set = Listing.objects.filter(city=city).difference(listings_user_already_has.filter(city=city))
         for listing in new_listing_set:
             user.profile.user_listings.add(listing)
     user.save()
 
-    print(f"Finished {user.username}")
-
-
-@app.task
-def update_listings_for_users(today):
-    # Add new listings to Users
-    print('Adding new listings to users, in celery')
-    print('There are more effective ways to do this, e.g. for each user, find cities, then all listings from those cities')
-    for listing in Listing.objects.filter():
-        # Runs once a day, should catch all new ones.
-        # Although more robust to go through all listings
-        if listing.created_at <= today:
-            # print('Listing:', listing.url, listing.id)
-            for user in User.objects.filter(): 
-                if user.profile.cities.filter(name=listing.city.name).exists():
-                    # print(f'Adding listings to {user.username} leads list')
-                    # if listing not in user.profile.user_listings.all():
-                        # NOTE: need to set listing status to 0 for that user.
-                    user.profile.user_listings.add(listing) # doesn't duplicate
-                    # if listing.id not in user.profile.authorised_listings_leads:
-                    #     if listing.id not in user.profile.authorised_listings_contacted:
-                    #         if listing.id not in user.profile.authorised_listings_booked:
-                    #             user.profile.authorised_listings_leads.append(listing.id)
-                user.save()
-                print(f"Finished {user.username}")
+    setup_logger.info(f"Finished updating listings for {user.username}")
 
 
 def financial_logic(listing):
+    """
+    Analyses a listing, and calculates some metrics.
+    """
     bedrooms = listing['bedrooms']
     profit = int(0.6 * (listing['mean_income'] - listing['rent']))
 

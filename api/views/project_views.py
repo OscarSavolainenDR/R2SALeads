@@ -14,14 +14,20 @@ import os
 
 from .auth_views import authenticate_from_session_key
 
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+file_handler = logging.FileHandler(os.path.join('logs','project.log'))
+file_handler.setFormatter(formatter)
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
+
 def find_indices(lst, condition):
     return [i for i, elem in enumerate(lst) if condition(elem)]
-
-class GetScrumBoardMembers(APIView):
-    # serializer_class = RoomSerializer
-    # Define a get request: frontend asks for stuff
-    def post(self, request, format=None):
-        return Response({"msg": f"Something happening ' scrum board members."}, status=status.HTTP_200_OK)
 
 
 class UpdateScrumBoardBackend(APIView):
@@ -38,7 +44,7 @@ class UpdateScrumBoardBackend(APIView):
         listing_id = request.data['draggableId']
         listing_from = request.data['source']['droppableId']
         listing_to = request.data['destination']['droppableId']
-        print(f'Deleting {listing_id} from {listing_from}, adding to {listing_to}')
+        logger.info(f'For user {user.username}, deleting {listing_id} from {listing_from}, adding to {listing_to}')
 
         # CHnage the listing's status for that user
         user_listing = Authorised_Listings.objects.filter(user=user.profile, listing_id = listing_id)[0]
@@ -64,6 +70,8 @@ class DownloadExcel(APIView):
         if user is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED) 
         
+        logger.info(f'Downloading excel {request.data["file_id"]} for user {user.username}')
+        
         # Find listing by id. Only search user's authorised listings.
         listing_query = user.profile.user_listings.filter(id=request.data['file_id'])
 
@@ -77,11 +85,11 @@ class DownloadExcel(APIView):
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-
         try:
             df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
         except Exception as e:
-            print(e)
+            logger.error('Failed to read excel')
+            logger.debug(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
         # Initialize data
@@ -103,6 +111,8 @@ class DownloadExcel(APIView):
                         str(df.columns.values[12]): str(df.loc[i][12]), 
                         }
             excel_json_str.append(data[i])
+
+        logger.info(f'Successfully downloaded excel {request.data["file_id"]} for user {user.username}')
         return Response({'data': json.dumps(excel_json_str)}, status=status.HTTP_200_OK)
 
 
@@ -116,8 +126,6 @@ class GetTableLeads(APIView):
         user = authenticate_from_session_key(request)
         if user is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED) 
-        
-        # print(request.data)
 
         table_data = request.data['tableData']
         filter_data = request.data['filterData']
@@ -128,12 +136,11 @@ class GetTableLeads(APIView):
         sort = table_data['sort']
         query = table_data['query'] 
         order = sort['order']
-        search_key = sort['key']
+        search_key = sort['key'] 
         statuses = filter_data['status']
 
         # import pdb; pdb.set_trace()
         listings = user.profile.user_listings.all()
-        print(f'We start with {len(listings)} listings')
         total_listings_len = len(listings)
 
         if query:
@@ -141,19 +148,19 @@ class GetTableLeads(APIView):
             listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query) | listings.filter(url__icontains=query)).distinct()
 
         # NOTE: put as search term in sorting
-        print(f'We have {len(listings)} listings')
+        logger.info(f'After query {query}, user {user.username} has {len(listings)} listings')
         # Get everything with status not in the filtered data
         not_statuses = []
         for status_ in range(4):
             if status_ not in statuses:
                 not_statuses.append(status_)
 
-        print('Not statuses', not_statuses)
+        # logger.info('User {user.username}, has not statuses', not_statuses)
         for status_ in not_statuses:
-            print('Status', status_)
+            # logger.info('Status', status_)
             listings = listings.exclude(authorised_listings__user=user.profile, authorised_listings__status=status_)
 
-        print(f'We still have {len(listings)} listings')
+        # logger.info(f'We still have {len(listings)} listings')
         # Sort data (by alphabetical order)
         if search_key:
             if (not search_key == 'status') and (not search_key == 'country'):
@@ -212,8 +219,8 @@ class GetTableLeads(APIView):
 
         # If no listings, we send them some empty listings encouraging
         # them to subscribe
-        if not len(listings) > 0:
-            print('No listings found!')
+        if not total_listings_len > 0:
+            logger.info(f'No listings found for {user.username}')
             # Dummy listing
             # Iterate through listings, return only what is needed
             sent_listings = []
@@ -238,9 +245,6 @@ class GetTableLeads(APIView):
                 'data': json.dumps(sent_listings),
                 'total': len(sent_listings),
             }
-
-            print('We send a response')
-
             # {"msg": f"There are currently no listings in those cities the user {user.username} is authorised to see."}
             return Response(response_data, status=status.HTTP_200_OK)
         
@@ -255,94 +259,94 @@ class GetTableLeads(APIView):
         return Response(response_data, status=status.HTTP_200_OK) # Send the listing details to frontend
 
 
-class GetScrumBoard(APIView):
-    # serializer_class = RoomSerializer
-    # lookup_url_kwarg = 'code' # when we call this instance, we need to give a keyword arguement
+# class GetScrumBoard(APIView):
+#     # serializer_class = RoomSerializer
+#     # lookup_url_kwarg = 'code' # when we call this instance, we need to give a keyword arguement
 
-    # Define a get request: frontend asks for stuff
-    def post(self, request, format=None):
+#     # Define a get request: frontend asks for stuff
+#     def post(self, request, format=None):
 
-        user = authenticate_from_session_key(request)
-        if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+#         user = authenticate_from_session_key(request)
+#         if user is None:
+#             return Response(status=status.HTTP_401_UNAUTHORIZED) 
         
-        # import pdb; pdb.set_trace()
-        listings = user.profile.user_listings.all()
+#         # import pdb; pdb.set_trace()
+#         listings = user.profile.user_listings.all()
 
-        # Create empty querysets
-        listing_queryset_leads = Listing.objects.none()
-        listing_queryset_contacted = Listing.objects.none()
-        listing_queryset_booked = Listing.objects.none()
+#         # Create empty querysets
+#         listing_queryset_leads = Listing.objects.none()
+#         listing_queryset_contacted = Listing.objects.none()
+#         listing_queryset_booked = Listing.objects.none()
 
-        for listing in listings:
+#         for listing in listings:
 
-            # Very ugly, but works. Should be a way to access it directly
-            user_listing = Authorised_Listings.objects.filter(listing=listing, user=user.profile)[0]
-            listing_status = user_listing.status
+#             # Very ugly, but works. Should be a way to access it directly
+#             user_listing = Authorised_Listings.objects.filter(listing=listing, user=user.profile)[0]
+#             listing_status = user_listing.status
 
-            # Add to appropriate queryset based on listing status
-            if listing_status == 0:
-                listing_queryset_leads |= Listing.objects.filter(pk=listing.pk)
-            elif listing_status == 1:
-                listing_queryset_contacted |= Listing.objects.filter(pk=listing.pk)
-            elif listing_status == 2:
-                listing_queryset_booked |= Listing.objects.filter(pk=listing.pk)
+#             # Add to appropriate queryset based on listing status
+#             if listing_status == 0:
+#                 listing_queryset_leads |= Listing.objects.filter(pk=listing.pk)
+#             elif listing_status == 1:
+#                 listing_queryset_contacted |= Listing.objects.filter(pk=listing.pk)
+#             elif listing_status == 2:
+#                 listing_queryset_booked |= Listing.objects.filter(pk=listing.pk)
 
 
-        # Serialize responses
-        serialized_leads = ListingSerializer(listing_queryset_leads, many=True).data
-        serialized_contacted = ListingSerializer(listing_queryset_contacted, many=True).data
-        serialized_booked = ListingSerializer(listing_queryset_booked, many=True).data
+#         # Serialize responses
+#         serialized_leads = ListingSerializer(listing_queryset_leads, many=True).data
+#         serialized_contacted = ListingSerializer(listing_queryset_contacted, many=True).data
+#         serialized_booked = ListingSerializer(listing_queryset_booked, many=True).data
 
-        serialized_q = {
-            'Leads': serialized_leads,
-            'Contacted': serialized_contacted,
-            'Viewing Booked': serialized_booked,
-        }
+#         serialized_q = {
+#             'Leads': serialized_leads,
+#             'Contacted': serialized_contacted,
+#             'Viewing Booked': serialized_booked,
+#         }
 
-        # If no listings, we send them some empty listings encouraging
-        # them to subscribe
-        if not ( (len(listing_queryset_leads)>0) or (len(listing_queryset_contacted)>0) or (len(listing_queryset_booked)>0) ):
-            print('No listings found!')
-            # Dummy listing
-            city = City(name='None')
-            if not City.objects.filter(name='None').exists():
-                city.save()
-                city = City.objects.filter(name='None')[0]
-            else:
-                city = City.objects.filter(name='None')[0]
+#         # If no listings, we send them some empty listings encouraging
+#         # them to subscribe
+#         if not ( (len(listing_queryset_leads)>0) or (len(listing_queryset_contacted)>0) or (len(listing_queryset_booked)>0) ):
+#             logger.info(f'No listings found for {user.username}')
+#             # Dummy listing
+#             city = City(name='None')
+#             if not City.objects.filter(name='None').exists():
+#                 city.save()
+#                 city = City.objects.filter(name='None')[0]
+#             else:
+#                 city = City.objects.filter(name='None')[0]
     
-            temp_queryset = Listing.objects.filter(city=city)
-            if not temp_queryset.exists():
-                temp_listing = Listing(city=city, name='Subscribe to a city to start receiving R2SA Leads!',
-                                        description='Go to the Manage Lead Subscriptions panel to subscribe to a city.',
-                                        comments = '', labels = ['1k+ profit'],
-                                        rent = 0, profit = 0, expected_income = 0)
-                attachment =    Attachment.objects.create(name = '', src='', size='',)
-                attachment.save()
-                temp_listing.save()
-                temp_listing.attachments.add(attachment)
-                # temp_listing.save()
-                temp_queryset = Listing.objects.filter(city=city)
-            else:
-                temp_listing = temp_queryset[0]
-                # attachment = temp
+#             temp_queryset = Listing.objects.filter(city=city)
+#             if not temp_queryset.exists():
+#                 temp_listing = Listing(city=city, name='Subscribe to a city to start receiving R2SA Leads!',
+#                                         description='Go to the Manage Lead Subscriptions panel to subscribe to a city.',
+#                                         comments = '', labels = ['1k+ profit'],
+#                                         rent = 0, profit = 0, expected_income = 0)
+#                 attachment =    Attachment.objects.create(name = '', src='', size='',)
+#                 attachment.save()
+#                 temp_listing.save()
+#                 temp_listing.attachments.add(attachment)
+#                 # temp_listing.save()
+#                 temp_queryset = Listing.objects.filter(city=city)
+#             else:
+#                 temp_listing = temp_queryset[0]
+#                 # attachment = temp
 
-            serialized_leads = ListingSerializer(temp_queryset, many=True).data
-            serialized_q = {
-                'Leads': serialized_leads,
-            }
-            temp_listing.delete()
-            attachment.delete()
-            # print(serialized_q)
+#             serialized_leads = ListingSerializer(temp_queryset, many=True).data
+#             serialized_q = {
+#                 'Leads': serialized_leads,
+#             }
+#             temp_listing.delete()
+#             attachment.delete()
+#             # print(serialized_q)
 
-            # {"msg": f"There are currently no listings in those cities the user {user.username} is authorised to see."}
-            return Response(serialized_q, status=status.HTTP_200_OK)
+#             # {"msg": f"There are currently no listings in those cities the user {user.username} is authorised to see."}
+#             return Response(serialized_q, status=status.HTTP_200_OK)
         
-        # Send the response (the listings we have found that match the user's cities and 
-        # authorised listing_ids)
-        # print(serialized_q) 
-        return Response(serialized_q, status=status.HTTP_200_OK) # Send the listing details to frontend
+#         # Send the response (the listings we have found that match the user's cities and 
+#         # authorised listing_ids)
+#         # print(serialized_q) 
+#         return Response(serialized_q, status=status.HTTP_200_OK) # Send the listing details to frontend
 
 
 
@@ -355,8 +359,7 @@ class UpdateLeadsListBackend(APIView):
         user = authenticate_from_session_key(request)
         if user is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED) 
-        
-        print(request.data)
+
         updates = request.data
 
         for update in updates:
@@ -366,7 +369,7 @@ class UpdateLeadsListBackend(APIView):
             listing_from = update['status']
             listing_to = (listing_from + 1) % 4 # can be 0, 1, 2, or 3, and toggling cycles them.
             # print(request.data)
-            print(f'Deleting {listing_id} from {listing_from}, adding to {listing_to}')
+            logger.info(f'For user {user.username}, deleting {listing_id} from {listing_from}, adding to {listing_to}')
         
             # Change the listing's status for that user
             user_listing = Authorised_Listings.objects.filter(user=user.profile, listing_id = listing_id)[0]
