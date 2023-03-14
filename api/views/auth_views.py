@@ -325,6 +325,9 @@ class ConfirmEmail_api(APIView):
 class GetEmailStatus(APIView):
     def post(self, request, format=None):
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         email_status = user.profile.email_confirmed
         return Response({'email_status': email_status}, status=status.HTTP_200_OK)
 
@@ -332,6 +335,8 @@ class GetEmailStatus(APIView):
 class ResendConfirmEmail(APIView):
     def post(self, request, format=None):
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         # Delete old confirmation email object
         old_confirm = ConfirmEmail.objects.filter(user=user)
@@ -399,6 +404,6 @@ def authenticate_from_session_key(request):
             print(f'User {user.username} found!')
             return user
         else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+            return None
     
-    return Response(status=status.HTTP_401_UNAUTHORIZED)
+    return None

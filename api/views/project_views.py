@@ -31,6 +31,9 @@ class UpdateScrumBoardBackend(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         # Get listing id, where it came from (e.g. leads) and where its going (e.g. contacted)
         listing_id = request.data['draggableId']
         listing_from = request.data['source']['droppableId']
@@ -58,6 +61,9 @@ class DownloadExcel(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         # Find listing by id. Only search user's authorised listings.
         listing_query = user.profile.user_listings.filter(id=request.data['file_id'])
 
@@ -108,6 +114,9 @@ class GetTableLeads(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         # print(request.data)
 
         table_data = request.data['tableData']
@@ -254,6 +263,9 @@ class GetScrumBoard(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         # import pdb; pdb.set_trace()
         listings = user.profile.user_listings.all()
 
@@ -341,6 +353,9 @@ class UpdateLeadsListBackend(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         print(request.data)
         updates = request.data
 

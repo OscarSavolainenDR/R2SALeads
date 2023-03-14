@@ -105,11 +105,15 @@ def stripe_webhook(request):
                 print('subscription id', subscription_id)
 
                 # Create subscription
-                Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=subscription_id)
-
+                if not Subscription.objects.filter(user=user.profile, city=city).exists():
+                    print('User cities', user.profile.cities)
+                    Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=subscription_id)
                 print('We got here')
+
                 # Delete from basket
                 user.profile.cities_basket.remove(city)
+
+                print('User basket', user.profile.cities_basket)
 
                 print('Adding listings to user')
                 update_listings_for_one_user(user)

@@ -26,6 +26,8 @@ class GetSubscriptionOptions(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         # NOTE: Add a serializer here, very important for query safety
         page_index = request.data['pageIndex']
@@ -107,6 +109,9 @@ class UnsubscribeFromCity(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             id = request.data['id']
@@ -161,6 +166,9 @@ class AddCitytoBasket(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+    
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(): # check if data in our post request is valid
 
@@ -196,6 +204,8 @@ class GetBasket(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         cities = user.profile.cities_basket.exclude(name='None') # all cities in basket
         subTotal = 0
@@ -225,6 +235,8 @@ class CheckoutBasket(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         cities = user.profile.cities_basket.exclude(name='None') # all cities in basket
         items = []
@@ -244,6 +256,8 @@ class CreateStripePaymentIntent(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         cities = user.profile.cities_basket.exclude(name='None')
 
@@ -280,6 +294,8 @@ class StripeCheckout(APIView):
     def post(self, request, format=None):
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
 
         # print(request.data)
         data = request.data

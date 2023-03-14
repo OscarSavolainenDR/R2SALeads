@@ -27,6 +27,8 @@ class Feedback(APIView):
     def post(self, request, format=None): 
 
         user = authenticate_from_session_key(request)
+        if user is None:
+            return Response(status=status.HTTP_401_UNAUTHORIZED) 
         
         # SEND EMAIL WITH VERIFICATION CODE
         print('Sending feedback', request.data)

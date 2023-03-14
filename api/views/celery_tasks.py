@@ -154,6 +154,7 @@ def update_listings_for_one_user(user):
     print('Adding new listings to user, in celery')
     listings_user_already_has = user.profile.user_listings.all()
     for city in user.profile.cities.all():
+        print(f'Adding {city.name} to {user.username}')
         new_listing_set = Listing.objects.filter(city=city).difference(listings_user_already_has.filter(city=city))
         for listing in new_listing_set:
             user.profile.user_listings.add(listing)
