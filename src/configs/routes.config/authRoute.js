@@ -21,7 +21,7 @@ const authRoute = [
     },
     {
         key: 'resetPassword',
-        path: `/reset-password/:uid/:token`,
+        path: `/reset-password/:token`,
         component: React.lazy(() => import('views/auth/ResetPassword')),
         authority: [],
     },
@@ -30,7 +30,7 @@ const authRoute = [
     //     path: `/confirm-email/:uid/:token`,
     //     component: React.lazy(() => import('views/auth/EmailConfirmed')),
     //     authority: [],
-    // }
+    // } 
 ]
 
 export default authRoute
