@@ -106,7 +106,6 @@ def stripe_webhook(request):
 
                 # Create subscription
                 if not Subscription.objects.filter(user=user.profile, city=city).exists():
-                    print('User cities', user.profile.cities)
                     Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=subscription_id)
                 print('We got here')
 
@@ -114,6 +113,7 @@ def stripe_webhook(request):
                 user.profile.cities_basket.remove(city)
 
                 print('User basket', user.profile.cities_basket)
+                print('User cities', user.profile.cities)
 
                 print('Adding listings to user')
                 update_listings_for_one_user(user)
@@ -125,7 +125,7 @@ def stripe_webhook(request):
                 #             user.profile.user_listings.add(listing)
                 user.save()
         
-        print('all user cities', user.profile.cities)
+        print('all user cities', user.profile.cities.all())
 
     else:
         print('Unhandled event type {}'.format(event.type))
