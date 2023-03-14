@@ -40,7 +40,7 @@ const Home = () => {
 				If you want to check out what the leads look like, go to Leads and see what's looking good in Oxford &#40;we give Leads there for free so you can see what the service is like&#41;.
 				<br />
 				<br />
-				<h5>Points worth highlighting:</h5>
+				{/* <h5>Points worth highlighting:</h5>
 				<br />
 				<ul>
 					<li style={liStyle}>We think the best way to use the table is a combination of the filter and query tools, and clicking on the listing status will toggle it (that you can use in conjunction with filtering).
@@ -50,7 +50,7 @@ const Home = () => {
 				</ul>
 
 				<br />
-				<br />
+				<br /> */}
 				If you have any queries, you can either use the feedback tab or email us at contact@r2sa-leads.co.uk . 
 
 			</span>
