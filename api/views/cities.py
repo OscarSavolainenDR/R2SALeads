@@ -27,8 +27,8 @@ cities = [
 # Test
 
 London_test = dict(name='London', country='England', price=200, stripe_subscription_code='price_1MT99MJeYWzBWqCqnYj1zFPZ')
-Dublin_test = dict(name='Dublin', country='Ireland', price=50, stripe_subscription_code='price_1MTAETJeYWzBWqCqN7QY44Et')
-Belfast_test = dict(name='Belfast', country='Ireland', price=50, stripe_subscription_code='price_1MTAF7JeYWzBWqCqabe0l1wi')
+# Dublin_test = dict(name='Dublin', country='Ireland', price=50, stripe_subscription_code='price_1MTAETJeYWzBWqCqN7QY44Et')
+# Belfast_test = dict(name='Belfast', country='Ireland', price=50, stripe_subscription_code='price_1MTAF7JeYWzBWqCqabe0l1wi')
 Bristol_test = dict(name='Bristol', country='England', price=50, stripe_subscription_code='price_1MVZsfJeYWzBWqCq2tnfHyMu')
 Swansea_test = dict(name='Swansea', country='England', price=50, stripe_subscription_code='price_1MaMsWJeYWzBWqCqngwREAJ2')
 Oxford_test = dict(name='Oxford', country='England', price=50, stripe_subscription_code='price_1MaMsiJeYWzBWqCqjyNzvKiW')
@@ -36,5 +36,5 @@ Bournemouth_test = dict(name='Bournemouth', country='England', price=50, stripe_
 
 
 test_cities = [
-    London_test, Dublin_test, Belfast_test, Bristol_test, Swansea_test, Oxford_test, Bournemouth_test,
+    London_test, Bristol_test, Swansea_test, Oxford_test, Bournemouth_test,
 ]
