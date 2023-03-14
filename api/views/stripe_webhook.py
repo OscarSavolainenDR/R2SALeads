@@ -4,6 +4,7 @@ import stripe
 from django.views.decorators.csrf import csrf_exempt
 import os
 from datetime import date
+from .celery_tasks import update_listings_for_one_user
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
@@ -106,15 +107,18 @@ def stripe_webhook(request):
                 # Create subscription
                 Subscription.objects.create(user=user.profile, city=city, stripe_subscription_id=subscription_id)
 
+                print('We got here')
                 # Delete from basket
                 user.profile.cities_basket.remove(city)
 
-                 # Add new listings to User
-                for listing in Listing.objects.filter(city=city):
-                    if listing.created_at <= date.today():
-                        if listing not in user.profile.user_listings.all():
-                            # NOTE: need to set listing status to 0 for that user.
-                            user.profile.user_listings.add(listing)
+                print('Adding listings to user')
+                update_listings_for_one_user(user)
+                #  # Add new listings to User
+                # for listing in Listing.objects.filter(city=city):
+                #     if listing.created_at <= date.today():
+                #         if listing not in user.profile.user_listings.all():
+                #             # NOTE: need to set listing status to 0 for that user.
+                #             user.profile.user_listings.add(listing)
                 user.save()
         
         print('all user cities', user.profile.cities)

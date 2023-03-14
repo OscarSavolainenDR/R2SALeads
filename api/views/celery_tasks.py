@@ -146,6 +146,23 @@ def update_listings_for_users_2():
 
 
 @app.task
+def update_listings_for_one_user(user):
+    """
+    Fast version. Add all the new listing we have to a user.
+    """
+    # Add new listings to Users
+    print('Adding new listings to user, in celery')
+    listings_user_already_has = user.profile.user_listings.all()
+    for city in user.profile.cities.all():
+        new_listing_set = Listing.objects.filter(city=city).difference(listings_user_already_has.filter(city=city))
+        for listing in new_listing_set:
+            user.profile.user_listings.add(listing)
+    user.save()
+
+    print(f"Finished {user.username}")
+
+
+@app.task
 def update_listings_for_users(today):
     # Add new listings to Users
     print('Adding new listings to users, in celery')
