@@ -1,21 +1,23 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import useThemeClass from 'utils/hooks/useThemeClass'
 
 const PrivacyPolicy = () => {
 
-    const navigate = useNavigate()
-    const TermsClick = () => {
-        navigate(`/app/legals/terms-and-conditions`)
-    }
+    // const navigate = useNavigate()
+    // const TermsClick = () => {
+    //     navigate(`/app/legals/terms-and-conditions`)
+    // }
 
     // Styling
+    const { textTheme } = useThemeClass()
     const boldText = {
         fontWeight: 'bold',
         marginLeft: '5px'
     }
-    const divStyle = {
-        display: 'flex',
-    }
+    // const divStyle = {
+    //     display: 'flex',
+    // }
     
 	return (
 		<div>
@@ -31,13 +33,19 @@ const PrivacyPolicy = () => {
                     in relation to your use of the Website.
                 </p>
                 <br />
-                <div style={divStyle}>
+                <p> This privacy policy should be read alongside, and in addition to, our Terms
+                    and Conditions, which can be found at:  
+						<Link to={{pathname: `/app/legals/terms-and-conditions`}} style={boldText} className={`cursor-pointer hover:${textTheme}`}>
+                            Terms and Conditions.
+						</Link>
+					</p>
+                {/* <div style={divStyle}>
                     <p>
                         This privacy policy should be read alongside, and in addition to, our Terms
                         and Conditions, which can be found at:  
                     </p>
                     <button  style={boldText} onClick={TermsClick}> Terms and Conditions.</button>
-                </div>
+                </div> */}
 
                 <br />
                 <p>

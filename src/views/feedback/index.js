@@ -55,7 +55,7 @@ const EditArticle = () => {
 				<div className="max-w-[800px] mx-auto">
 					<div className="flex justify-between items-center mb-4">
 						<h3>
-                            <span>Submit Feedback</span>
+                            <span>Get in touch!</span>
 							{/* {mode === 'edit' && <span>Edit Article</span>}
 							{mode === 'add' && <span>Add Article</span>}
 							{mode === 'preview' && <span>Preview Article</span>} */}

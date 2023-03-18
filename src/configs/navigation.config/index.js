@@ -68,11 +68,11 @@ const navigationConfig = [
 		subMenu: []
 	},
 	{
-		key: 'appsGen.feedback',
-		path: `${APP_PREFIX_PATH}/feedback`,
-		title: 'Feedback',
-		translateKey: 'nav.appsGen.feedback',
-		icon: 'feedback',
+		key: 'appsGen.contact',
+		path: `${APP_PREFIX_PATH}/contact`,
+		title: 'Contact',
+		translateKey: 'nav.appsGen.contact',
+		icon: 'contact',
 		type: NAV_ITEM_TYPE_ITEM,
 		authority: [ADMIN, USER],
 		subMenu: []

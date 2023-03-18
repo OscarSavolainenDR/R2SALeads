@@ -6,11 +6,11 @@ import { THEME_ENUM } from 'constants/theme.constant'
  */
 
 export const themeConfig = {
-    themeColor: 'indigo',
+    themeColor: 'purple',
     direction: THEME_ENUM.DIR_LTR,
     mode: THEME_ENUM.NAV_MODE_DARK,
     locale: 'en',
-    primaryColorLevel: 600,
+    primaryColorLevel: 400,
     cardBordered: true,
     panelExpand: false,
     controlSize: 'md',

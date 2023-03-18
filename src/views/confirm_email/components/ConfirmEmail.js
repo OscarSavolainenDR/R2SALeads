@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Alert } from 'components/ui'
 import { apiGetEmailStatus, apiResendConfirmEmail } from 'services/AuthService'
 import useThemeClass from 'utils/hooks/useThemeClass'
+import { Link } from "react-router-dom";
 
 const ConfirmEmail = () => {
 	
@@ -56,10 +57,16 @@ const ConfirmEmail = () => {
 			<div >
 				{message && <Alert className="mb-4" type="info" showIcon>
 					{message}
-					<div style={divStyle}>
+					<p> Click
+						<Link onClick={ResendEmail} style={boldText} className={`cursor-pointer hover:${textTheme}`}>
+						    here
+						</Link>
+						&nbsp;to resend a confirmation email.
+					</p>
+					{/* <div style={divStyle}>
 						<p>Click </p><button  style={boldText} className={`cursor-pointer hover:${textTheme}`} onClick={ResendEmail}>here </button> 
 						<p>&nbsp;to resend a confirmation email.</p>
-					</div>
+					</div> */}
 				</Alert>}
 				
 			</div>

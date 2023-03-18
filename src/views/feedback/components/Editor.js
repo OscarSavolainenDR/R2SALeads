@@ -133,7 +133,7 @@ const Editor = ({mode}) => {
 		if (resp.status) {
 			toast.push(
 				<Notification 
-					title={`Thank you for the feedback!`} 
+					title={`Thank you for getting in touch!`} 
 					type="success"
 				/>,
 				{ placement: 'top-center' }

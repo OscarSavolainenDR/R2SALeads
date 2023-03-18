@@ -12,7 +12,7 @@ const navigationIcon = {
     scrumBoard: <HiOutlineClipboardList />,
     subscriptions: <HiOutlineBookOpen />,
     account: <HiUser />,
-    feedback: <HiOutlineMail />,
+    contact: <HiOutlineMail />,
 }
 
 export default navigationIcon

@@ -11,7 +11,7 @@ export const protectedRoutes = [
     {
         key: 'home',
         path: '/home',
-        component: React.lazy(() => import('views/Home')),
+        component: React.lazy(() => import('views/LandingPage')),
         authority: [ADMIN, USER],
     },
     {
@@ -67,12 +67,12 @@ export const protectedRoutes = [
     //     }
     // },
     {
-        key: 'appsGen.feedback',
-        path: `${APP_PREFIX_PATH}/feedback`,
+        key: 'appsGen.contact',
+        path: `${APP_PREFIX_PATH}/contact`,
         component: React.lazy(() => import('views/feedback')),
         authority: [ADMIN, USER],
         meta: {
-            header: 'Feedback',
+            header: 'Contact',
             headerContainer: true
         }
     },
