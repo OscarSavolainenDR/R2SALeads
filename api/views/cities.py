@@ -20,7 +20,7 @@ Birmingham = dict(name='Birmingham', country='England', price=50, stripe_subscri
 Bath = dict(name='Bath', country='England', price=50, stripe_subscription_code='price_1MaM8HJeYWzBWqCqAGzDLa8j'),
 
 cities = [
-    Bath, Birmingham, Blackpool, Bournemouth, Brighton, Bristol, Cambridge, Cardiff, Dover,
+    Bath, Birmingham, Blackpool, Bournemouth, Brighton, Bristol, Cambridge, Cardiff, #Dover,
     Glasgow, Liverpool, London, Manchester, Oxford, Plymouth, Southampton, Swansea
 ]
 

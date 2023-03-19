@@ -83,41 +83,52 @@ class DownloadExcel(APIView):
             listing = listing_query[0]
             city = listing.city.name
 
-            excel_path = os.path.join('excels', f'{city}.xlsx')
-            listing_sheet = f'Listing_{listing.excel_sheet}'
-            # breakpoint()
+            # Stored in DB, tells us what element of JSON array has listing info
+            listing_DB_and_JSON_index = int(listing.excel_sheet) 
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         try:
-            df = pd.read_excel(excel_path, sheet_name=listing_sheet)  # 
-        except Exception as e:
+            import gzip
+            with gzip.open(os.path.join('listings_json_data','json_data_' + city + '.json'), 'r') as fin:
+                all_listings = json.loads(fin.read().decode('utf-8'))
+
+            # Get listing info from JSON array
+            listing = all_listings[listing_DB_and_JSON_index]
+
+            # Remove redundant columns for some rows
+            for index, airbnb in enumerate(listing[1:]):
+                airbnb.pop('Listing URL', None)
+                airbnb.pop('Listing Daily Rent', None)
+                airbnb.pop('Listing Bedrooms', None)
+                airbnb.pop('Listing Bathrooms', None)
+                airbnb.pop('Mean Monthly Income', None)
+                airbnb.pop('Median Monthly Income', None)
+                
+                listing[index+1] = airbnb
+            # listing[0]['Listing Monthly Rent'] = listing[0].pop('Listing Daily Rent')*30
+
+            # Move monthly rent to other column in excel (earlier position in dict)
+            pos = list(listing[0].keys()).index('Listing Bedrooms')
+            items = list(listing[0].items())
+            items.insert(pos, ('Listing Monthly Rent', listing[0].pop('Listing Daily Rent')*30))
+            listing[0] = dict(items)
+
+            # Move Distances to next to Daily Income, if not already done
+            pos = list(listing[0].keys()).index('Mean Monthly Income')
+            items = list(listing[0].items())
+            distance = listing[0].pop('Distance (km)')
+            items.insert(pos, ('Distance (km)', distance))
+            listing[0] = dict(items)
+
+
+        except Exception as e: 
             logger.error('Failed to read excel')
             logger.debug(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-        # Initialize data
-        data=[0 for i in range(len(df))]
-        excel_json_str = []
-        for i in range(len(df)):    
-            data[i] = { str(df.columns.values[0]): str(df.loc[i][0]), 
-                        str(df.columns.values[1]): str(df.loc[i][1]), 
-                        str(df.columns.values[2]): str(df.loc[i][2]),
-                        str(df.columns.values[3]): str(df.loc[i][3]),
-                        str(df.columns.values[4]): str(df.loc[i][4]),
-                        str(df.columns.values[5]): str(df.loc[i][5]), 
-                        str(df.columns.values[6]): str(df.loc[i][6]), 
-                        str(df.columns.values[7]): str(df.loc[i][7]), 
-                        str(df.columns.values[8]): str(df.loc[i][8]), 
-                        str(df.columns.values[9]): str(df.loc[i][9]), 
-                        str(df.columns.values[10]): str(df.loc[i][10]), 
-                        str(df.columns.values[11]): str(df.loc[i][11]), 
-                        str(df.columns.values[12]): str(df.loc[i][12]), 
-                        }
-            excel_json_str.append(data[i])
-
         logger.info(f'Successfully downloaded excel {request.data["file_id"]} for user {user.username}')
-        return Response({'data': json.dumps(excel_json_str)}, status=status.HTTP_200_OK)
+        return Response({'data': json.dumps(listing)}, status=status.HTTP_200_OK)
 
 
 class GetTableLeads(APIView):

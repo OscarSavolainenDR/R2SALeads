@@ -51,6 +51,7 @@ class Listing(models.Model): #RandomIDModel
     expected_income = models.IntegerField(default=50)
     profit = models.IntegerField(default=50)
     rent = models.IntegerField(default=50)
+    expected_occupancy = models.IntegerField(default=50)
     breakeven_occupancy = models.IntegerField(default=110)
     comments = models.CharField(max_length=250)
     bedrooms = models.IntegerField(default=50)

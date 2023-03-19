@@ -83,7 +83,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "backend_v3.wsgi.application"
 
-
+ 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -104,6 +104,9 @@ DATABASES = {
         'PORT': env("DB_PORT"),
     }
 }
+
+# 10 MB file max
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
 
 
 # Password validation
@@ -155,7 +158,7 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ORIGIN_WHITELIST = [
-    # 'https://localhost:3000',
+    'https://localhost',
     'https://r2sa-v1-frontend.herokuapp.com',
     'https://r2sa-leads.co.uk',
     'https://www.r2sa-leads.co.uk',

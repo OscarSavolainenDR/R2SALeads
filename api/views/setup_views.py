@@ -38,27 +38,42 @@ logger = logging.getLogger(__name__)
 
 ## Just for filling the DB with dummy data, can be adapted later for actually updating the DB.
 class InitDB(APIView):
+    """
+    Updates cities list, and subscribes admin to all cities.
+    """
     today = date.today()
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
 
-        import unicodedata
-        
-
         # Checks authorisation here, only continues if the code is accepted.
-        try:
-            auth = json.loads(request.body)
-            given_auth_key = auth['auth_key']
-        except:
-            logger.error('Incorrect auth key given during InitDB')
+        auth = json.loads(request.body)
+        if not 'auth_key' in auth:
+            logger.error('No auth key given during InitDB')
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            given_auth_key = auth['auth_key']
+    
         # Incorrect auth key was given
         if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
         logger.info('Correct auth key given, running Init DB')
 
-        # Get all ciities currently in DB
+        # Create admin
+        if not User.objects.filter(username='admin').exists():
+            admin = User(username='admin',
+                email = 'admin@hotmail.com')
+            admin.set_password('abc')
+            admin.save()
+            stripe_response = stripe.Customer.create(
+                email = admin.email,
+                name = admin.username
+            )
+            # admin.profile.authorisations = ['user'],
+            admin.profile.stripe_customer_id = stripe_response.id
+            admin.save()
+
+        # Get all cities currently in DB
         cities_in_DB = City.objects.all()
         cities_in_DB = [city.name for city in cities_in_DB]
 
@@ -92,226 +107,83 @@ class InitDB(APIView):
                 city_elem.country = city['country']
                 city_elem.stripe_subscription_code = city['stripe_subscription_code']
                 city_elem.save()
-      
-        if not User.objects.filter(username='admin').exists():
-            admin = User(username='admin',
-                email = 'admin@hotmail.com')
-            admin.set_password('abc')
-            admin.save()
-            stripe_response = stripe.Customer.create(
-                email = admin.email,
-                name = admin.username
-            )
-            # admin.profile.authorisations = ['user'],
-            admin.profile.stripe_customer_id = stripe_response.id
-            city = City.objects.filter(name=city['name'])[0]
-            admin.profile.cities.add(city)
-            admin.save()
-            
+
+            # Subscribe admin to all cities
+            admin.profile.cities.add(city_elem)
         return Response(status=status.HTTP_200_OK)
   
 from django.views.decorators.csrf import csrf_exempt
+import zlib 
+import gzip
 class UpdateListings(APIView):
-    today = date.today()
     @csrf_exempt
     def post(self, request, format=None):
 
+        # Decompresses data
+        body = json.loads(zlib.decompress(request.body).decode("utf-8"))
+
         # Checks authorisation here, only continues if the code is accepted.
-        try:
-            auth = json.loads(request.body)
-            given_auth_key = auth['auth_key']
-        except:
-            logger.error('Incorrect auth key given during UpdateListings')
+        if not 'auth_key' in body:
+            logger.error('No auth key given during UpdateListings')  
             return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            given_auth_key = body['auth_key']
+    
         # Incorrect auth key was given
         if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-            
         logger.info('Correct auth key given, running UpdateListings')
 
-        for city in cities:
-            if type(city) is tuple:
-                city = city[0]
-            load_and_store_new_listings_celery(city['name'], self.today)
+        if not 'data' in body or not 'listings' in body['data']:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        listings = body['data']['listings']
+        city_name = body['data']['city']
+
+        # Save communicated listings to json file, a bit slow but good to have them.
+        # We could probably just save the original communicated compressed data.
+        json_bytes = json.dumps(listings).encode('utf-8') # bytes
+        with gzip.open(os.path.join("listings_json_data",f"json_data_{city_name}.json"), 'w') as fout: # fewer bytes (i.e. gzip)
+            fout.write(json_bytes)    
+
+        load_and_store_new_listings_celery(city_name)
 
         update_listings_for_users_2()
 
         return Response(status=status.HTTP_200_OK)
 
 
-def load_and_store_new_listings(city_name, today):
-    # Load new listings
-    try:
-        logger.info(f'Updating {city_name} listings')
-        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
-            all_listings = json.load(json_file)
-    except:
-        logger.exception(f'Updating {city_name} listings failed')
-        return
+class UpdateListingsWithInPlaceFiles(APIView):
+    """
+    Same as UpdateLisitngs, but we don't give it any new data.
+    We just update the listings with the current files. Mainly used for debugging.
+    """
+    @csrf_exempt
+    def post(self, request, format=None):
 
-    # # If existing listing is expired, delete. 
-    # # If recently expired, mark it as expired
-    # # so doesn't just disappear from frontend
-    # listing_queryset = Listing.objects.filter()
-    # for listing in listing_queryset:
-    #     # If expired recently
-    #     if listing.expired_date <= today:
-    #         listing.url = 'Listing no longer on the market'
-    #         listing.postcode = 'X'
-    #     # If expired more than 3 days ago
-    #     elif listing.expired_date < today - timedelta(days=3):
-    #         listing.delete()  
-
-    city = City.objects.filter(name=city_name)[0]
-    listing_queryset = Listing.objects.filter(city=city)
-
-    # Delete all listings in the desired city, that aren't in the new results
-    try:
-        all_urls_in_json = [listing['url'] for listing in all_listings]
-        for db_listing in listing_queryset:
-            if db_listing.url not in all_urls_in_json:
-                db_listing.delete()
-    except Exception as e:
-        logger.exception("Wasn't able to delete old listings")
-        return
-
-    # Store in DB if new
-    for _, listing in enumerate(all_listings):  # iterating through listings in json
-
-        # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
-        # and treat it as a new listing)
-        check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
-        if check_if_already_in_DB.exists():
-            existing_DB_listing = check_if_already_in_DB[0]
-            if existing_DB_listing.excel_sheet != int(listing["excel_sheet"].split('Listing_',1)[1]):
-                logger.error(f'wrong index, is {existing_DB_listing.excel_sheet} and should be {int(listing["excel_sheet"].split("Listing_",1)[1])}')
-                # breakpoint()
-                existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split("Listing_",1)[1])
-                
-                # Basically, the problem may be that the financial data is changing, e.g. some excels
-                # are updated with new airbnb data. In which case, there would be a mismatch between the
-                # DB and the excel.
-                # I should just take the existing DB listing, and edit it in place.
-                # If doesn't exist, then create a new one. 2 seperate logics.
-
-                existing_DB_listing.save()
-            # If rent is the same, skip
-            if existing_DB_listing.rent == int(listing['rent']):
-                continue
-            # Otherwise delete the listing, go again
-            else:
-                logger.info(f"Deleted listing {existing_DB_listing.excel_sheet}")
-                existing_DB_listing.delete()
-                # Could have a listing['reduced'] = True here, and do something with that to signal to front end listing is reduced
-
-        bedrooms = listing['bedrooms']
-        # expenses = listing['rent'] * 1.4
-        profit = int(0.6 * (listing['mean_income'] - listing['rent']))
-        if profit < 500:
-            continue
-
-        breakeven_occupancy = int((listing['mean_income'] - profit) / listing['mean_income'] * 100)
-        round_profit = np.floor(profit / 1000 )  # profit in 1000's
+        # Checks authorisation here, only continues if the code is accepted.
+        auth = json.loads(request.body)
+        # import IPython
+        # IPython.embed()
+        print(auth)
+        print(auth['auth_key'])
+        if not 'auth_key' in auth:
+            logger.error('No auth key given during UpdateListingsWithInPlaceFiles')  
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            given_auth_key = auth['auth_key']
+    
+        # Incorrect auth key was given
+        if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
         
-        if round_profit == 0: # If lower than 1000, give profit in 100s
-            round_profit = int(np.floor(profit / 100 ))  # profit in 1000's
-            labels = [f'{bedrooms} bed', f'{round_profit}00+ profit']
-        else:
-            labels = [f'{bedrooms} bed', f'{round_profit}k+ profit']
-        
-        # print( f"Postcode: {listing['postcode']} - £{profit}/month")
-        logger.info(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
-        l = Listing(
-                city = city,
-                postcode = f"{listing['postcode']}",
-                rent = int(listing['rent']),
-                breakeven_occupancy = breakeven_occupancy,
-                expected_income = int(listing['mean_income']),
-                profit = profit,
-                description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
-                comments = '',
-                bedrooms = bedrooms,
-                url = listing['url'],
-                labels = labels,
-                excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1]),
-            )
-        # breakpoint()
+        logger.info('Correct auth key given, running UpdateListingsWithInPlaceFiles')
 
-        if not Listing.objects.filter(url=listing['url']).exists():
-            l.save()
-        else:
-            logger.info(f"Not adding listing {listing['url']} to DB: Listing exists already")
+        for city in cities:
+            if type(city) is tuple:
+                city = city[0]
+            load_and_store_new_listings_celery(city['name'])
 
-def load_and_store_new_listings_2(city_name, today):
-    # Load new listings
-    try:
-        logger.info(f'Updating {city_name} listings')
-        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
-            all_listings = json.load(json_file)
-    except:
-        logger.exception(f'Updating {city_name} listings failed')
-        return 
+        update_listings_for_users_2()
 
-    # Find all DB listings in the given city
-    city = City.objects.filter(name=city_name)[0]
-    listing_queryset = Listing.objects.filter(city=city)
-
-    # Delete all listings in the desired city, that aren't in the new results (considered to be expired)
-    try:
-        all_urls_in_json = [listing['url'] for listing in all_listings]
-        for db_listing in listing_queryset:
-            if db_listing.url not in all_urls_in_json:
-                db_listing.delete()
-    except Exception as e:
-        logger.exception(f"Wasn't able to delete old listings, exception: {e}")
-        return
-
-    # Store in DB if new
-    for _, listing in enumerate(all_listings):  # iterating through listings in json
-
-        # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
-        # and treat it as a new listing)
-        check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
-        if check_if_already_in_DB.exists():
-            existing_DB_listing = check_if_already_in_DB[0]
-
-            # The financial data may be updated for this listing, check
-            bedrooms, breakeven_occupancy, profit, labels = financial_logic(listing)
-
-            if profit < 500:
-                existing_DB_listing.delete()
-                continue
-
-            # Update existing DB listing in place
-            existing_DB_listing.breakeven_occupancy = breakeven_occupancy
-            existing_DB_listing.expected_income = int(listing['mean_income'])
-            existing_DB_listing.rent = int(listing['rent'])
-            existing_DB_listing.profit = profit
-            existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1])
-            existing_DB_listing.labels = labels
-            existing_DB_listing.save()
-
-        # New listing
-        else:
-
-            bedrooms, breakeven_occupancy, profit, labels = financial_logic(listing)
-
-            l = Listing(
-                city = city,
-                postcode = f"{listing['postcode']}",
-                rent = int(listing['rent']),
-                breakeven_occupancy = breakeven_occupancy,
-                expected_income = int(listing['mean_income']),
-                profit = profit,
-                description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
-                comments = '',
-                bedrooms = bedrooms,
-                url = listing['url'],
-                labels = labels,
-                excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1]),
-            )
-
-            if not Listing.objects.filter(url=listing['url']).exists():
-                l.save()
-            else:
-                logger.exception(f'Updating {city_name} listings failed')
+        return Response(status=status.HTTP_200_OK)

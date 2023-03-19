@@ -4,8 +4,8 @@ Good day,
 Please click the link below to confirm your email for your account at r2sa-leads.co.uk. 
 Before doing so, please log out of r2sa-leads.co.uk.
 
-{% comment %} {{ protocol }}://{{ domain }}/confirm-email/{{ uid }}/{{ token }} {% endcomment %}
-localhost:3000/confirm-email/{{ uid }}/{{ token }}
+{{ protocol }}://{{ domain }}/confirm-email/{{ uid }}/{{ token }} 
+{% comment %} localhost:3000/confirm-email/{{ uid }}/{{ token }} {% endcomment %}
 {% comment %} {{ uid }}/ {% endcomment %}
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.

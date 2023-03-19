@@ -20,33 +20,33 @@ logger = logging.getLogger(__name__)
 
 
 # import logging
-# auth_logger = logging.getLogger(__name__)
-# auth_logger.setLevel(logging.INFO)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 # formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
 # file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','auth.log'))
 # file_handler.setFormatter(formatter)
 # stream_handler = logging.StreamHandler()
 # stream_handler.setFormatter(formatter)
-# auth_logger.addHandler(file_handler)
-# auth_logger.addHandler(stream_handler)
+# logger.addHandler(file_handler)
+# logger.addHandler(stream_handler)
 
 # excel_path = os.path.join('excels', f'{city}.xlsx')
 
 
-# setup_logger = logging.getLogger(__name__)
-# setup_logger.setLevel(logging.INFO)
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 # file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','setup.log'))
 # file_handler.setFormatter(formatter)
 # stream_handler = logging.StreamHandler()
 # stream_handler.setFormatter(formatter)
-# setup_logger.addHandler(file_handler)
-# setup_logger.addHandler(stream_handler)
+# logger.addHandler(file_handler)
+# logger.addHandler(stream_handler)
 
 
 @app.task
 def send_email_confirmation_celery(pk):
 
-    auth_logger.info('Creating confirm email token')
+    logger.info('Creating confirm email token')
     user = User.objects.filter(pk=pk)[0]
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -68,24 +68,26 @@ def send_email_confirmation_celery(pk):
     }
     email = render_to_string(email_template_name, c)
     try:   
-        auth_logger.info(f"Sending email for user {user.email}")
+        logger.info(f"Sending email for user {user.email}")
         send_mail(subject, email, 'contact@r2sa-leads.co.uk' , [user.email], fail_silently=False)
-        auth_logger.info(f"Email sent successfully for user {user.email}")
+        logger.info(f"Email sent successfully for user {user.email}")
     except Exception as e:
-        auth_logger.error(e)
-        auth_logger.error('Sending confirmation email failed')
+        logger.error(e)
+        logger.error('Sending confirmation email failed')
         email_confirm.delete()
 
-
+import gzip
 @app.task
-def load_and_store_new_listings_celery(city_name, today):
+def load_and_store_new_listings_celery(city_name):
     # Load new listings
     try:
-        setup_logger.info(city_name)
-        with open(os.path.join('listings_json_data','json_data_' + city_name + '.json')) as json_file:
-            all_listings = json.load(json_file)
+        logger.info(city_name)
+        # with open(os.path.join('listings_json_data','json_data_' + city_name + '_debug.json')) as json_file:
+        #     all_listings = json.load(json_file)
+        with gzip.open(os.path.join('listings_json_data','json_data_' + city_name + '.json'), 'r') as fin:
+            all_listings = json.loads(fin.read().decode('utf-8'))
     except:
-        setup_logger.error(city_name, 'failed')
+        logger.error(city_name, 'failed')
         return
 
     # Find all DB listings in the given city
@@ -94,21 +96,25 @@ def load_and_store_new_listings_celery(city_name, today):
 
     # Delete all listings in the desired city, that aren't in the new results (considered to be expired)
     try:
-        all_urls_in_json = [listing['url'] for listing in all_listings]
+        all_urls_in_json = [listing[0]['Listing URL'] for listing in all_listings]
         for db_listing in listing_queryset:
             if db_listing.url not in all_urls_in_json:
                 db_listing.delete()
     except Exception as e:
-        setup_logger.error('Failed to update listings in {city_name}')
-        setup_logger.info(e)
+        logger.error('Failed to delete listings-absent-from-update in {city_name}')
+        logger.info(e)
         return
 
     # Store in DB if new
-    for _, listing in enumerate(all_listings):  # iterating through listings in json
+    for listing_index, listing in enumerate(all_listings):  # iterating through listings in json
+
+        # Convert JSON to pandas
+        import pandas as pd
+        listing = pd.read_json(json.dumps(listing))
 
         # Skip the listings we already have in the DB (unless rent has changed, in which case we delete it 
         # and treat it as a new listing)
-        check_if_already_in_DB = Listing.objects.filter(url=listing['url'])
+        check_if_already_in_DB = Listing.objects.filter(url=listing['Listing URL'].iloc[0])
         if check_if_already_in_DB.exists():
             existing_DB_listing = check_if_already_in_DB[0]
 
@@ -121,11 +127,11 @@ def load_and_store_new_listings_celery(city_name, today):
 
             # Update existing DB listing in place
             existing_DB_listing.breakeven_occupancy = breakeven_occupancy
-            existing_DB_listing.expected_income = int(listing['mean_income'])
-            existing_DB_listing.rent = int(listing['rent'])
+            existing_DB_listing.expected_income = int(listing['Mean Monthly Income'].iloc[0])
+            existing_DB_listing.rent = int(30*listing['Listing Daily Rent'].iloc[0])
             existing_DB_listing.profit = profit
-            existing_DB_listing.excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1])
             existing_DB_listing.labels = labels
+            existing_DB_listing.excel_sheet =  listing_index # important that this index is correct
             existing_DB_listing.save()
 
         # New listing
@@ -135,31 +141,32 @@ def load_and_store_new_listings_celery(city_name, today):
 
             l = Listing(
                 city = city,
-                postcode = f"{listing['postcode']}",
-                rent = int(listing['rent']),
+                # postcode = f"{listing['postcode']}",
+                rent = int(30*listing['Listing Daily Rent'].iloc[0]),
                 breakeven_occupancy = breakeven_occupancy,
-                expected_income = int(listing['mean_income']),
+                expected_occupancy = int(listing['Occupancy (%)'].iloc[0]),
+                expected_income = int(listing['Mean Monthly Income'].iloc[0]),
                 profit = profit,
-                description =   f"Expected Occupancy: {int(listing['expected_occupancy'])}%; Agency/Host: {listing['agency_or_host']} - {listing['website']}",
+                description =   f"Expected Occupancy: {int(listing['Occupancy (%)'].iloc[0])}%; Agency/Host: Temp",
                 comments = '',
                 bedrooms = bedrooms,
-                url = listing['url'],
+                url = listing['Listing URL'].iloc[0],
                 labels = labels,
-                excel_sheet = int(listing["excel_sheet"].split('Listing_',1)[1]),
+                excel_sheet = listing_index, # don't use this, can be unreliable. Use URL as index, it's cleaner.
             )
 
-            if not Listing.objects.filter(url=listing['url']).exists():
+            if not Listing.objects.filter(url=listing['Listing URL'].iloc[0]).exists():
                 l.save()
             else:
-                setup_logger.error(f"Listing {listing['url']} exists already")
+                logger.error(f"Listing {listing['Listing URL'].iloc[0]} exists already")
 
 @app.task
 def update_listings_for_users_2():
     """
-    Fast version. Add all the new listing we have to their repsective users.
+    Fast version. Add all the new listings we have to their repsective users.
     """
     # Add new listings to Users
-    setup_logger.info('Adding new listings to users, in celery')
+    logger.info('Adding new listings to users, in celery')
     for user in User.objects.filter(): 
         listings_user_already_has = user.profile.user_listings.all()
         for city in user.profile.cities.all():
@@ -168,7 +175,7 @@ def update_listings_for_users_2():
                 user.profile.user_listings.add(listing)
         user.save()
 
-        setup_logger.info(f"Finished {user.username}")
+        logger.info(f"Finished {user.username}")
 
 
 @app.task
@@ -177,26 +184,27 @@ def update_listings_for_one_user(user):
     Fast version. Add all the new listing we have to a user.
     """
     # Add new listings to Users
-    setup_logger.info(f'Adding new listings to {user.username}, in celery')
+    logger.info(f'Adding new listings to {user.username}, in celery')
     listings_user_already_has = user.profile.user_listings.all()
     for city in user.profile.cities.all():
-        setup_logger.info(f'Adding {city.name} to {user.username}')
+        logger.info(f'Adding {city.name} to {user.username}')
         new_listing_set = Listing.objects.filter(city=city).difference(listings_user_already_has.filter(city=city))
         for listing in new_listing_set:
             user.profile.user_listings.add(listing)
     user.save()
 
-    setup_logger.info(f"Finished updating listings for {user.username}")
+    logger.info(f"Finished updating listings for {user.username}")
 
 
 def financial_logic(listing):
     """
     Analyses a listing, and calculates some metrics.
     """
-    bedrooms = listing['bedrooms']
-    profit = int(0.6 * (listing['mean_income'] - listing['rent']))
+    bedrooms = int(listing['Listing Bedrooms'].iloc[0])
+    mean_income = int(listing['Mean Monthly Income'].iloc[0])
+    profit = int(0.6 * (mean_income - listing['Listing Daily Rent'].iloc[0]))
 
-    breakeven_occupancy = int((listing['mean_income'] - profit) / listing['mean_income'] * 100)
+    breakeven_occupancy = int((mean_income - profit) / mean_income * 100)
     round_profit = np.floor(profit / 1000 )  # profit in 1000's
     
     if round_profit == 0: # If lower than 1000, give profit in 100s
