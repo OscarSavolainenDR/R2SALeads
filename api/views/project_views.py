@@ -18,7 +18,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
-file_handler = logging.FileHandler(os.path.join('custom_logs','project.log'))
+file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','project.log'))
 file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
