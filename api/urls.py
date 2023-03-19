@@ -3,7 +3,6 @@ from django.urls import path
 from .views.setup_views import InitDB, UpdateListings
 from .views.project_views import UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResendConfirmEmail, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
-from .views.notification_views import GetNotifications, GetNotificationCount
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
 from .views.subscription_views import GetBasket, CheckoutBasket#, StripeCheckout #, CreateStripePaymentIntent#, SaveStripeInfo
 from .views.account_views import GetAccountSettingsData, GetAccountSettingsBillingData, UpdatePassword
@@ -44,10 +43,6 @@ urlpatterns = [
     path('account/setting', GetAccountSettingsData.as_view()),
     path('account/setting/billing', GetAccountSettingsBillingData.as_view()),
     path('account/update-password', UpdatePassword.as_view()),
-    
-    # Notification URLs
-    path('notification/list', GetNotifications.as_view()),
-    path('notification/count', GetNotificationCount.as_view()),
 
     # Auth URLs
     path('sign-in', SignIn.as_view()),

@@ -25,7 +25,7 @@ import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
-file_handler = logging.FileHandler('logs/setup.log')
+file_handler = logging.FileHandler(os.path.join('custom_logs','setup.log'))
 file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)

@@ -29,12 +29,11 @@ import stripe
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 website_domain = os.getenv('WEBSITE_DOMAIN')
 
-
 import logging
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
-file_handler = logging.FileHandler(os.path.join('logs','auth.log'))
+file_handler = logging.FileHandler(os.path.join('custom_logs','auth.log'))
 file_handler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
 stream_handler.setFormatter(formatter)
