@@ -15,27 +15,32 @@ from backend_v3.celery import app
 
 website_domain = os.getenv('WEBSITE_DOMAIN') 
 
-
 import logging
-auth_logger = logging.getLogger(__name__)
-auth_logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
-file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','auth.log'))
-file_handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-auth_logger.addHandler(file_handler)
-auth_logger.addHandler(stream_handler)
+logger = logging.getLogger(__name__)
 
 
-setup_logger = logging.getLogger(__name__)
-setup_logger.setLevel(logging.INFO)
-file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','setup.log'))
-file_handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-setup_logger.addHandler(file_handler)
-setup_logger.addHandler(stream_handler)
+# import logging
+# auth_logger = logging.getLogger(__name__)
+# auth_logger.setLevel(logging.INFO)
+# formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+# file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','auth.log'))
+# file_handler.setFormatter(formatter)
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter)
+# auth_logger.addHandler(file_handler)
+# auth_logger.addHandler(stream_handler)
+
+# excel_path = os.path.join('excels', f'{city}.xlsx')
+
+
+# setup_logger = logging.getLogger(__name__)
+# setup_logger.setLevel(logging.INFO)
+# file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','setup.log'))
+# file_handler.setFormatter(formatter)
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter)
+# setup_logger.addHandler(file_handler)
+# setup_logger.addHandler(stream_handler)
 
 
 @app.task

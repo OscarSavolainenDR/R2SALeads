@@ -18,16 +18,19 @@ from .auth_views import authenticate_from_session_key
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 
+# import logging
+# logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
+# formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
+# file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','subscriptions.log'))
+# file_handler.setFormatter(formatter)
+# stream_handler = logging.StreamHandler()
+# stream_handler.setFormatter(formatter)
+# logger.addHandler(file_handler)
+# logger.addHandler(stream_handler)
+
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s:%(lineno)d:%(levelname)s:%(message)s')
-file_handler = logging.FileHandler(os.path.join(os.getcwd(),'custom_logs','subscriptions.log'))
-file_handler.setFormatter(formatter)
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
 
 class GetSubscriptionOptions(APIView):
     # serializer_class = RoomSerializer

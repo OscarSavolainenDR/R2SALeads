@@ -175,9 +175,34 @@ CELERY_RESULT_SERIALIZER = 'json'
 CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
 CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
 
+import sys
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '{levelname} - line {lineno} - [{asctime}] module:{module} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+            'stream': sys.stdout,
+        },
+    },
+    'loggers': {  # I tried replacing this with 'root'
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    }
+}
+
 # May need to replace with django_on_heroku, maintained package
 import django_heroku
-django_heroku.settings(locals())
+django_heroku.settings(locals(), logging=False)
 
 
 # if os.getcwd() == '/app':
