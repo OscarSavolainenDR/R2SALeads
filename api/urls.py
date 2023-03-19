@@ -5,7 +5,7 @@ from .views.project_views import UpdateScrumBoardBackend, DownloadExcel, GetTabl
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResendConfirmEmail, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
 from .views.subscription_views import GetBasket, CheckoutBasket#, StripeCheckout #, CreateStripePaymentIntent#, SaveStripeInfo
-from .views.account_views import GetAccountSettingsData, GetAccountSettingsBillingData, UpdatePassword
+from .views.account_views import GetAccountSettingsData, UpdatePassword #GetAccountSettingsBillingData, 
 from .views.stripe_webhook import stripe_webhook
 from .views.test_views import Test 
 from .views.feedback_views import Feedback
@@ -41,7 +41,7 @@ urlpatterns = [
     
     # Account
     path('account/setting', GetAccountSettingsData.as_view()),
-    path('account/setting/billing', GetAccountSettingsBillingData.as_view()),
+    # path('account/setting/billing', GetAccountSettingsBillingData.as_view()),
     path('account/update-password', UpdatePassword.as_view()),
 
     # Auth URLs
