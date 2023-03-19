@@ -58,8 +58,6 @@ const ProductTableTools = () => {
 		// console.log(response)
 
 		if (response.status) {
-			console.log('redirect to checkout')
-
 			// Set Loading to true
 
 			const stripe = await getStripe()
@@ -72,8 +70,8 @@ const ProductTableTools = () => {
 	const data = useSelector((state) => state.salesProductList.data.productList)
 	const sum_checkout_basket = data.reduce((prev,next) => prev + (next.status == 1),0);
 
-		//  && (confirmed)
-	if ((sum_checkout_basket > 0)) {
+	// Only show chcekcout button if something in basket and email confirmed
+	if ((sum_checkout_basket > 0) && (confirmed)) {
 		return (
 			<div className="flex flex-col lg:flex-row lg:items-center">
 				<div style={{marginRight: '10px'}}>
