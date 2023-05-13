@@ -158,6 +158,8 @@ class GetTableLeads(APIView):
         listings = user.profile.user_listings.all()
         total_listings_len = len(listings)
 
+        logger.info(f'User {user.username} has {total_listings_len} listings')
+
         if query:
             # import pdb; pdb.set_trace()
             listings = (listings.filter(city__name__icontains=query) | listings.filter(city__country__icontains=query) | listings.filter(expected_income__icontains=query) | listings.filter(url__icontains=query)).distinct()

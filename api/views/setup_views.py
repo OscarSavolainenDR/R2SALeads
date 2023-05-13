@@ -118,7 +118,7 @@ class InitDB(APIView):
             admin.profile.cities.add(city_elem)
 
         update_listings_for_users_2()
-        
+
         return Response(status=status.HTTP_200_OK)
   
 from django.views.decorators.csrf import csrf_exempt
@@ -172,10 +172,6 @@ class UpdateListingsWithInPlaceFiles(APIView):
 
         # Checks authorisation here, only continues if the code is accepted.
         auth = json.loads(request.body)
-        # import IPython
-        # IPython.embed()
-        print(auth)
-        print(auth['auth_key'])
         if not 'auth_key' in auth:
             logger.error('No auth key given during UpdateListingsWithInPlaceFiles')  
             return Response(status=status.HTTP_400_BAD_REQUEST)
