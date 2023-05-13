@@ -46,7 +46,7 @@ class InitDB(APIView):
     def post(self, request, format=None):
 
         # Checks authorisation here, only continues if the code is accepted.
-        auth = json.loads(request.data)
+        auth = request.data
         if not 'auth_key' in auth:
             logger.error('No auth key given during InitDB')
             return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -129,7 +129,7 @@ class UpdateListings(APIView):
     def post(self, request, format=None):
 
         # Decompresses data
-        body = json.loads(zlib.decompress(request.data).decode("utf-8"))
+        body = json.loads(zlib.decompress(request.body).decode("utf-8"))
 
         # Checks authorisation here, only continues if the code is accepted.
         if not 'auth_key' in body:
@@ -171,7 +171,7 @@ class UpdateListingsWithInPlaceFiles(APIView):
     def post(self, request, format=None):
 
         # Checks authorisation here, only continues if the code is accepted.
-        auth = json.loads(request.data)
+        auth = request.data
         if not 'auth_key' in auth:
             logger.error('No auth key given during UpdateListingsWithInPlaceFiles')  
             return Response(status=status.HTTP_400_BAD_REQUEST)
