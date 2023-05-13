@@ -75,6 +75,12 @@ class DownloadExcel(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED) 
         
         logger.info(f'Downloading excel {request.data["file_id"]} for user {user.username}')
+
+        # AWS S3 storage
+        BUCKET = os.getenv('AWS_STORAGE_BUCKET_NAME')
+        ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
+        SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+        s3_resource = boto3.resource('s3', aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY) 
         
         # Find listing by id. Only search user's authorised listings.
         listing_query = user.profile.user_listings.filter(id=request.data['file_id'])
@@ -90,8 +96,12 @@ class DownloadExcel(APIView):
 
         try:
             import gzip
-            with gzip.open(os.path.join('listings_json_data','json_data_' + city + '.json'), 'r') as fin:
-                all_listings = json.loads(fin.read().decode('utf-8'))
+            # with gzip.open(os.path.join('listings_json_data','json_data_' + city + '.json'), 'r') as fin:
+            #     all_listings = json.loads(fin.read().decode('utf-8'))
+
+            obj = s3_resource.Object(BUCKET, os.path.join('listings_json_data','json_data_' + city + '.json'))
+            with gzip.GzipFile(fileobj=obj.get()) as gzipfile:
+                all_listings = json.loads(gzipfile.read().decode('utf-8'))
 
             # Get listing info from JSON array
             listing = all_listings[listing_DB_and_JSON_index]

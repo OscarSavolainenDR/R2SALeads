@@ -9,6 +9,7 @@ import os
 import json
 import numpy as np
 import gzip
+import boto3
 
 
 # from celery import shared_task
@@ -85,15 +86,26 @@ def send_email_confirmation_celery(pk):
 
 @shared_task()
 def load_and_store_new_listings_celery(city_name):
+
+    # AWS S3 storage
+    BUCKET = os.getenv('AWS_STORAGE_BUCKET_NAME')
+    ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
+    SECRET_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
+    s3_resource = boto3.resource('s3', aws_access_key_id=ACCESS_KEY, aws_secret_access_key=SECRET_KEY) 
+
     # Load new listings
     try:
         logger.info(city_name)
         # with open(os.path.join('listings_json_data','json_data_' + city_name + '_debug.json')) as json_file:
         #     all_listings = json.load(json_file)
-        with gzip.open(os.path.join('listings_json_data','json_data_' + city_name + '.json'), 'r') as fin:
-            all_listings = json.loads(fin.read().decode('utf-8'))
-    except:
+        # with gzip.open(os.path.join('listings_json_data','json_data_' + city_name + '.json'), 'r') as fin:
+        #     all_listings = json.loads(fin.read().decode('utf-8'))
+        obj = s3_resource.Object(BUCKET, os.path.join('current_files','listings_json_data','json_data_' + city_name + '.json'))
+        with gzip.GzipFile(fileobj=obj.get()) as gzipfile:
+             all_listings = json.loads(gzipfile.read().decode('utf-8'))
+    except Exception as e:
         logger.error(city_name, 'failed')
+        logger.debug(e)
         return
 
     # Find all DB listings in the given city

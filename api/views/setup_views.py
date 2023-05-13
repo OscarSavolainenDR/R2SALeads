@@ -13,6 +13,10 @@ from datetime import date, timedelta
 import stripe
 import os
 import numpy as np
+import boto3
+from django.views.decorators.csrf import csrf_exempt
+import zlib 
+import gzip
 
 from .auth_views import authenticate_from_session_key
 from ..tasks import load_and_store_new_listings_celery, update_listings_for_users_2_celery, financial_logic, update_listings_master_celery
@@ -121,18 +125,17 @@ class InitDB(APIView):
 
         return Response(status=status.HTTP_200_OK)
   
-from django.views.decorators.csrf import csrf_exempt
-import zlib 
-import gzip
+
 class UpdateListings(APIView):
     @csrf_exempt
     def post(self, request, format=None):
         """
-        Expects one city to be updated, and data to be sent over an API call.
+        Expects one city to be updated, and for the city_name to be sent over API.
+        It will read the listings data from AWS S3 bucket.
         """
 
         # Decompresses data
-        body = json.loads(zlib.decompress(request.body).decode("utf-8"))
+        body = json.loads(request.body)
 
         # Checks authorisation here, only continues if the code is accepted.
         if not 'auth_key' in body:
@@ -144,19 +147,20 @@ class UpdateListings(APIView):
         # Incorrect auth key was given
         if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
             return Response(status=status.HTTP_400_BAD_REQUEST)
-        logger.info('Correct auth key given, running UpdateListings')
-
-        if not 'data' in body or not 'listings' in body['data']:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
         
-        listings = body['data']['listings']
-        city_name = body['data']['city']
 
-        # Save communicated listings to json file, a bit slow but good to have them.
-        # We could probably just save the original communicated compressed data.
-        json_bytes = json.dumps(listings).encode('utf-8') # bytes
-        with gzip.open(os.path.join("listings_json_data",f"json_data_{city_name}.json"), 'w') as fout: # fewer bytes (i.e. gzip)
-            fout.write(json_bytes)    
+        # if not 'data' in body or not 'listings' in body['data']:
+        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        # listings = body['data']['listings']
+        city_name = body['city']
+
+        logger.info(f'Correct auth key given, running UpdateListings for {city_name}')
+
+        # # Save communicated listings to json file, a bit slow but good to have them.
+        # # We could probably just save the original communicated compressed data.
+        # json_bytes = json.dumps(listings).encode('utf-8') # bytes
+        # save_file = os.path.join("listings_json_data",f"json_data_{city_name}.json") 
 
         load_and_store_new_listings_celery.delay(city_name)
 
@@ -187,5 +191,29 @@ class UpdateListingsWithInPlaceFiles(APIView):
         logger.info('Correct auth key given, running UpdateListingsWithInPlaceFiles')
 
         update_listings_master_celery()
+
+        return Response(status=status.HTTP_200_OK)
+
+class WipeListings(APIView):
+    """
+    We delete all listings from DB, used for debugging. NOTE: THIS SHOULD BE DELETED IN PRODUCTION, TOO DANGEROUS.
+    """
+    def post(self, request, format=None):
+
+        # Checks authorisation here, only continues if the code is accepted.
+        auth = request.data
+        if not 'auth_key' in auth:
+            logger.error('No auth key given during WipeListings')  
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            given_auth_key = auth['auth_key']
+    
+        # Incorrect auth key was given
+        if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        
+        logger.info('Correct auth key given, running WipeListings')
+
+        Listing.objects.all().delete()
 
         return Response(status=status.HTTP_200_OK)
