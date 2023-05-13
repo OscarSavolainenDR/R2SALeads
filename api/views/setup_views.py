@@ -15,7 +15,7 @@ import os
 import numpy as np
 
 from .auth_views import authenticate_from_session_key
-from .celery_tasks import load_and_store_new_listings_celery, update_listings_for_users_2, financial_logic
+from ..tasks import load_and_store_new_listings_celery, update_listings_for_users_2_celery, financial_logic, update_listings_master_celery
  
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
  
@@ -117,7 +117,7 @@ class InitDB(APIView):
             # Subscribe admin to all cities
             admin.profile.cities.add(city_elem)
 
-        update_listings_for_users_2()
+        update_listings_for_users_2_celery()
 
         return Response(status=status.HTTP_200_OK)
   
@@ -127,6 +127,9 @@ import gzip
 class UpdateListings(APIView):
     @csrf_exempt
     def post(self, request, format=None):
+        """
+        Expects one city to be updated, and data to be sent over an API call.
+        """
 
         # Decompresses data
         body = json.loads(zlib.decompress(request.body).decode("utf-8"))
@@ -155,9 +158,9 @@ class UpdateListings(APIView):
         with gzip.open(os.path.join("listings_json_data",f"json_data_{city_name}.json"), 'w') as fout: # fewer bytes (i.e. gzip)
             fout.write(json_bytes)    
 
-        load_and_store_new_listings_celery(city_name)
+        load_and_store_new_listings_celery.delay(city_name)
 
-        update_listings_for_users_2()
+        update_listings_for_users_2_celery()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -167,7 +170,6 @@ class UpdateListingsWithInPlaceFiles(APIView):
     Same as UpdateLisitngs, but we don't give it any new data.
     We just update the listings with the current files. Mainly used for debugging.
     """
-    @csrf_exempt
     def post(self, request, format=None):
 
         # Checks authorisation here, only continues if the code is accepted.
@@ -184,11 +186,6 @@ class UpdateListingsWithInPlaceFiles(APIView):
         
         logger.info('Correct auth key given, running UpdateListingsWithInPlaceFiles')
 
-        for city in cities:
-            if type(city) is tuple:
-                city = city[0]
-            load_and_store_new_listings_celery(city['name'])
-
-        update_listings_for_users_2()
+        update_listings_master_celery()
 
         return Response(status=status.HTTP_200_OK)

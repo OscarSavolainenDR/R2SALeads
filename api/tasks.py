@@ -1,5 +1,5 @@
 from __future__ import absolute_import, unicode_literals
-from ..models import ConfirmEmail, User, City, Listing
+from .models import ConfirmEmail, User, City, Listing
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.tokens import default_token_generator
@@ -8,10 +8,14 @@ from django.core.mail import send_mail
 import os
 import json
 import numpy as np
+import gzip
 
 
 # from celery import shared_task
-from backend_v3.celery import app
+# from backend_v3.celery import app
+from celery import shared_task
+
+from .views.cities import cities as cities
 
 website_domain = os.getenv('WEBSITE_DOMAIN') 
 
@@ -42,8 +46,10 @@ logger = logging.getLogger(__name__)
 # logger.addHandler(file_handler)
 # logger.addHandler(stream_handler)
 
+# # NOTE: For celery, we use app directly, since we're on Heroku and
+# # I'm not sure shared_app will work.
 
-@app.task
+@shared_task()
 def send_email_confirmation_celery(pk):
 
     logger.info('Creating confirm email token')
@@ -76,8 +82,8 @@ def send_email_confirmation_celery(pk):
         logger.error('Sending confirmation email failed')
         email_confirm.delete()
 
-import gzip
-@app.task
+
+@shared_task()
 def load_and_store_new_listings_celery(city_name):
     # Load new listings
     try:
@@ -160,8 +166,8 @@ def load_and_store_new_listings_celery(city_name):
             else:
                 logger.error(f"Listing {listing['Listing URL'].iloc[0]} exists already")
 
-@app.task
-def update_listings_for_users_2():
+@shared_task()
+def update_listings_for_users_2_celery():
     """
     Fast version. Add all the new listings we have to their repsective users.
     """
@@ -178,8 +184,8 @@ def update_listings_for_users_2():
         logger.info(f"Finished {user.username}")
 
 
-@app.task
-def update_listings_for_one_user(user):
+@shared_task()
+def update_listings_for_one_user_celery(user):
     """
     Fast version. Add all the new listing we have to a user.
     """
@@ -194,6 +200,15 @@ def update_listings_for_one_user(user):
     user.save()
 
     logger.info(f"Finished updating listings for {user.username}")
+
+@shared_task()
+def update_listings_master_celery():
+    for city in cities:
+        if type(city) is tuple:
+            city = city[0]
+        load_and_store_new_listings_celery.delay(city['name'])
+
+    update_listings_for_users_2_celery()
 
 
 def financial_logic(listing):

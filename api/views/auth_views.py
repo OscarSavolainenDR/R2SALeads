@@ -18,7 +18,7 @@ import asyncio
 from datetime import date
 from django.contrib.auth import authenticate
 # from ...backend_v3.settings import BASE_DIR
-from .celery_tasks import send_email_confirmation_celery, update_listings_for_one_user
+from ..tasks import send_email_confirmation_celery, update_listings_for_one_user_celery
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
@@ -183,10 +183,10 @@ class SignUp(APIView):
 
             # NOTE: Send email confirmation to them.
             # send_email_confirmation(new_user)
-            send_email_confirmation_celery(new_user.pk)
+            send_email_confirmation_celery.delay(new_user.pk)
 
             # Add new listings to User
-            update_listings_for_one_user(new_user)
+            update_listings_for_one_user_celery.delay(new_user)
 
             packet = {
                 'username': username,
@@ -366,7 +366,7 @@ class ResendConfirmEmail(APIView):
         # Resend new one
         # send_email_confirmation(user)
         logger.info(f'Sending confirmation email for {user.username}')
-        send_email_confirmation_celery(user.pk)
+        send_email_confirmation_celery.delay(user.pk)
 
         return Response(status=status.HTTP_200_OK)
 

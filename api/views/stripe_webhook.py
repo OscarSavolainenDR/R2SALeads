@@ -4,7 +4,7 @@ import stripe
 from django.views.decorators.csrf import csrf_exempt
 import os
 from datetime import date
-from .celery_tasks import update_listings_for_one_user
+from ..tasks import update_listings_for_one_user_celery
 
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
 webhook_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
@@ -140,8 +140,7 @@ def stripe_webhook(request):
                 logger.info('{user.username} basket', user.profile.cities_basket)
                 logger.info('{user.username} cities', user.profile.cities)
 
-        update_listings_for_one_user(user)
-        user.save()
+        update_listings_for_one_user_celery.delay(user)
         
         logger.info('All {user.username} cities:', user.profile.cities.all())
 
