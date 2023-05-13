@@ -131,7 +131,7 @@ def load_and_store_new_listings_celery(city_name):
             existing_DB_listing.rent = int(30*listing['Listing Daily Rent'].iloc[0])
             existing_DB_listing.profit = profit
             existing_DB_listing.labels = labels
-            existing_DB_listing.excel_sheet =  listing_index # important that this index is correct
+            existing_DB_listing.excel_sheet = listing_index # important that this index is correct
             existing_DB_listing.save()
 
         # New listing

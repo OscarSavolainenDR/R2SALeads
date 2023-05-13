@@ -62,8 +62,8 @@ class InitDB(APIView):
         # Create admin
         if not User.objects.filter(username='admin').exists():
             admin = User(username='admin',
-                email = 'admin@hotmail.com')
-            admin.set_password('abc')
+                email = os.getenv('ADMIN_EMAIL'))
+            admin.set_password(os.getenv('ADMIN_PASSWORD'))
             admin.save()
             stripe_response = stripe.Customer.create(
                 email = admin.email,
@@ -72,10 +72,15 @@ class InitDB(APIView):
             # admin.profile.authorisations = ['user'],
             admin.profile.stripe_customer_id = stripe_response.id
             admin.save()
+        else:
+            admin = User.objects.filter(username='admin')[0]
+            admin.email = os.getenv('ADMIN_EMAIL')
+            admin.set_password(os.getenv('ADMIN_PASSWORD'))
+            admin.save()
 
         # Get all cities currently in DB
         cities_in_DB = City.objects.all()
-        cities_in_DB = [city.name for city in cities_in_DB]
+        # cities_in_DB_names = [city.name for city in cities_in_DB]
 
         city_names = []
         for city in cities:
@@ -87,7 +92,8 @@ class InitDB(APIView):
 
         # Delete cities in DB that aren't in the provided cities variable
         for city_in_DB in cities_in_DB:
-            if city_in_DB not in city_names:
+            if city_in_DB.name not in city_names:
+                logger.debug(f"{city_in_DB.name} deleted from DB")
                 city_in_DB.delete()
 
         for city in cities:
