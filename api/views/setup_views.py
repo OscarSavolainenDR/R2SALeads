@@ -116,6 +116,9 @@ class InitDB(APIView):
 
             # Subscribe admin to all cities
             admin.profile.cities.add(city_elem)
+
+        update_listings_for_users_2()
+        
         return Response(status=status.HTTP_200_OK)
   
 from django.views.decorators.csrf import csrf_exempt
