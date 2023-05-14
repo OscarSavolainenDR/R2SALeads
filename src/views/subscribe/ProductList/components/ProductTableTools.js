@@ -9,6 +9,7 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { loadStripe } from "@stripe/stripe-js"
 import { apiGetEmailStatus } from 'services/AuthService'
+import useAuth from 'utils/hooks/useAuth'
 
 
 let stripePromise
@@ -18,7 +19,6 @@ const getStripe = () => {
     }
     return stripePromise
 }
-
 
 const ProductTableTools = () => {
 
@@ -35,8 +35,8 @@ const ProductTableTools = () => {
 		fetchData();
 	  });
 
-	
-
+	// Check if user is signed in
+	const { authenticated } = useAuth()
 
 	// const navigate = useNavigate()
 	// Make API call to backend, which returns url to redirect to
@@ -70,8 +70,8 @@ const ProductTableTools = () => {
 	const data = useSelector((state) => state.salesProductList.data.productList)
 	const sum_checkout_basket = data.reduce((prev,next) => prev + (next.status == 1),0);
 
-	// Only show chcekcout button if something in basket and email confirmed
-	if ((sum_checkout_basket > 0) && (confirmed)) {
+	// Only show checkout button if something in basket, email confirmed, and user signed in
+	if ((sum_checkout_basket > 0) && (confirmed) && (authenticated)) {
 		return (
 			<div className="flex flex-col lg:flex-row lg:items-center">
 				<div style={{marginRight: '10px'}}>

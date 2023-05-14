@@ -12,6 +12,7 @@ import ProductDeleteConfirmation from './ProductDeleteConfirmation'
 import RemoveFromBasketConfirmation from './RemoveFromBasketConfirmation'
 // import { useNavigate } from 'react-router-dom'
 import cloneDeep from 'lodash/cloneDeep'
+import useAuth from 'utils/hooks/useAuth'
 
 const inventoryStatusColor = {
 	0: { label: 'Subscribed', dotClass: 'bg-emerald-500', textClass: 'text-emerald-500'},
@@ -41,6 +42,9 @@ const ActionColumn = ({status, row}) => {
 	const tableData = useSelector((state) => state.salesProductList.data.tableData)
 	// const selectedProduct = useSelector((state) => state.salesProductList.state.selectedProduct)
 	// const { status } = props.row.original
+
+	// Check if user is signed in
+	const { authenticated } = useAuth()
 
 
 	const onAddToBasket = async () => {
@@ -95,30 +99,37 @@ const ActionColumn = ({status, row}) => {
 	}
 	
 	{/* If unsubscribed */}
-	if (row.status == 2) {
+	if (authenticated ) {
+		if (row.status == 2) {
+			return (
+				<div className="flex justify-end text-lg">
+					<span className={`cursor-pointer p-2 hover:${textTheme}`} onClick={onAddToBasket}>
+						<HiShoppingCart />
+					</span>
+				</div>
+			)
+		} else if (row.status == 0) {
+			// If subscribed
+			return (
+				<div className="flex justify-end text-lg">
+					<span className="cursor-pointer p-2 hover:text-red-500" onClick={onDelete}>
+						<HiX />
+					</span>
+				</div>
+			)
+		} else if (row.status == 1) {
+			// If in basket
+			return (
+				<div className="flex justify-end text-lg">
+					<span className="cursor-pointer p-2 hover:text-red-500" onClick={onRemove}>
+						<HiX />
+					</span>
+				</div>
+			)
+		} 
+	} else {
 		return (
 			<div className="flex justify-end text-lg">
-				<span className={`cursor-pointer p-2 hover:${textTheme}`} onClick={onAddToBasket}>
-					<HiShoppingCart />
-				</span>
-			</div>
-		)
-	} else if (row.status == 0) {
-		// If subscribed
-		return (
-			<div className="flex justify-end text-lg">
-				<span className="cursor-pointer p-2 hover:text-red-500" onClick={onDelete}>
-					<HiX />
-				</span>
-			</div>
-		)
-	} else if (row.status == 1) {
-		// If in basket
-		return (
-			<div className="flex justify-end text-lg">
-				<span className="cursor-pointer p-2 hover:text-red-500" onClick={onRemove}>
-					<HiX />
-				</span>
 			</div>
 		)
 	}

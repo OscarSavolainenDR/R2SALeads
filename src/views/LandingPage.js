@@ -25,7 +25,7 @@ function LandingPage() {
         <br/>
         <p>Our cutting-edge website scans the entire rental market and uses advanced algorithms to determine which properties would make the perfect Airbnb investment.</p>
         <br/>
-        <p>With our subscription service, real estate professionals can access all of the market research on each potential Airbnb, saving them time and effort in their search for profitable listings. Our platform is designed to provide you with all the information you need to make informed decisions, giving you the competitive edge you need to succeed in the fast-paced world of Airbnb Arbitrage.</p>
+        <p>With our subscription service, R2SA investors and sourcers can access all of the market research on each potential Airbnb, saving them time and effort in their search for profitable listings. Our platform is designed to provide you with all the information you need to make informed decisions, giving you the competitive edge you need to succeed in the fast-paced world of Airbnb Arbitrage.</p>
         <br/>
         <p>Our team of experts has years of experience in real estate, technology, and data analysis, ensuring that our platform is accurate, reliable, and user-friendly. We are dedicated to helping you achieve your financial goals and make the most of your Airbnb investments.</p>
         <br/>

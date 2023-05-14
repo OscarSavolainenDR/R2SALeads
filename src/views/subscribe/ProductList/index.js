@@ -5,12 +5,14 @@ import { AdaptableCard } from 'components/shared'
 import ProductTable from './components/ProductTable'
 import ProductTableTools from './components/ProductTableTools'
 import ConfirmEmail from 'views/confirm_email/components/ConfirmEmail'
+import SignUpPrompt from 'views/sign_up_prompt/components/SignUpPrompt'
 
 injectReducer('salesProductList', reducer)
 
 const ProductList = () => {
 	return (
 		<div>
+			<SignUpPrompt />
 			<ConfirmEmail />
 		
 			<AdaptableCard className="h-full" bodyClass="h-full">

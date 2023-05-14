@@ -13,7 +13,7 @@ import useThemeClass from 'utils/hooks/useThemeClass'
 // import { useNavigate } from 'react-router-dom'
 import cloneDeep from 'lodash/cloneDeep'
 import exportFromJSON from 'export-from-json'
-
+import useAuth from 'utils/hooks/useAuth'
 
 const inventoryStatusColor = {
 	0: { label: 'Lead', textClass: 'text-grey-500'},
@@ -49,57 +49,62 @@ const ActionColumn = ({row}) => {
 	// const [update, setUpdate] = useState([]);
 	const updateAPI = useSelector((state) => state.projectTableView.state.APICounter)
 
+	// Check if user is signed in
+	const { authenticated } = useAuth()
 	
 	// const selectedProduct = useSelector((state) => state.salesProductList.state.selectedProduct)
 	// const { status } = props.row.original
 
-
 	const onToggleStatus = async () => {
-		// not sure this works
-		dispatch(setSelectedProduct(row.id))
+		
+		if (authenticated) {
+			// not sure this works
+			dispatch(setSelectedProduct(row.id))
 
-		const listing_ids = data.map(({ id }) => id); // NOTE: is this mapping incorrect?
-		const listing_id = listing_ids.indexOf(row.id)
-		// console.log('selected product', row.id)
-		// console.log('Listing_id', listing_id)
-		// console.log('id', id)
-		const listing_dict = data[listing_id]
-		// console.log('listing dict', listing_dict)
-		const status = listing_dict['status']
-
-		// Update state here, not backend.
-		// We are storing the status and row.id herem, so we can send them batched to the backend.
-		// Also have to update the table.
-		dispatch(addToggledStatusChanges([...toggledStatusChanges, {status: status, listing_id: row.id}]))
-		const newData = cloneDeep(data)
-		newData[listing_id].status = (newData[listing_id].status + 1) % 4
-		// console.log('New status', newData[listing_id].status)
-		dispatch(updateProductList(newData))
-		// row.status = row.status + 1
-		// setBasket([...basket, makeid(8)]);
-		// console.log(toggledStatusChanges)
-		dispatch(setAPICounter(updateAPI+1))
-
-		console.log('UpdateAPi value:', updateAPI)
-
-		// const updating = async () => {
-		if (updateAPI > 10) {
-			const success = await updateLeadsListBackend(toggledStatusChanges)
+			const listing_ids = data.map(({ id }) => id); // NOTE: is this mapping incorrect?
+			const listing_id = listing_ids.indexOf(row.id)
+			// console.log('selected product', row.id)
+			// console.log('Listing_id', listing_id)
+			// console.log('id', id)
+			const listing_dict = data[listing_id]
+			// console.log('listing dict', listing_dict)
+			const status = listing_dict['status']
 	
-			console.log('Success')
-			if (success){
-				dispatch(setAPICounter(0))
-				dispatch(addToggledStatusChanges([]))
-
-				dispatch(getLeads({filterData: filterData, tableData: tableData}))
-				setBasket([...basket, makeid(8)]);
+			// Update state here, not backend.
+			// We are storing the status and row.id herem, so we can send them batched to the backend.
+			// Also have to update the table.
+			dispatch(addToggledStatusChanges([...toggledStatusChanges, {status: status, listing_id: row.id}]))
+			const newData = cloneDeep(data)
+			newData[listing_id].status = (newData[listing_id].status + 1) % 4
+			// console.log('New status', newData[listing_id].status)
+			dispatch(updateProductList(newData))
+			// row.status = row.status + 1
+			// setBasket([...basket, makeid(8)]);
+			// console.log(toggledStatusChanges)
+			dispatch(setAPICounter(updateAPI+1))
+	
+			// console.log('UpdateAPi value:', updateAPI)
+	
+			// const updating = async () => {
+			if (updateAPI > 10) {
+				const success = await updateLeadsListBackend(toggledStatusChanges)
+		
 				// console.log('Success')
-			} else {
-				// dispatch(getLeads({filterData: filterData, tableData: tableData}))
-				// console.log('Failed')
+				if (success){
+					dispatch(setAPICounter(0))
+					dispatch(addToggledStatusChanges([]))
+	
+					dispatch(getLeads({filterData: filterData, tableData: tableData}))
+					setBasket([...basket, makeid(8)]);
+					// console.log('Success')
+				} else {
+					// dispatch(getLeads({filterData: filterData, tableData: tableData}))
+					// console.log('Failed')
+				}
+				
 			}
-			
 		}
+
 		// }
 
 		// const success = await updateLeadsListBackend({'status': status, 'id': row.id})
@@ -166,7 +171,6 @@ const LeadsProductTable = () => {
 		dispatch(getLeads({filterData: filterData, tableData: tableData}))
 	}
 
-	
 	const downloadExcel = async (file_id, url) => {
 
 		// console.log(file_id)
