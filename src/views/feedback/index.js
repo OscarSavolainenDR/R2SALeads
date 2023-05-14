@@ -55,11 +55,12 @@ const EditArticle = () => {
 				<div className="max-w-[800px] mx-auto">
 					<div className="flex justify-between items-center mb-4">
 						<h3>
-                            <span>Get in touch!</span>
+                            <span>Fill in the form below to get into touch</span>
 							{/* {mode === 'edit' && <span>Edit Article</span>}
 							{mode === 'add' && <span>Add Article</span>}
 							{mode === 'preview' && <span>Preview Article</span>} */}
 						</h3>
+						<span>Or contact us directly at contact@r2sa-leads.co.uk</span>
 						{/* {
 							mode === 'preview' ? 
 							(

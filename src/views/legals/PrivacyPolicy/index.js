@@ -353,8 +353,7 @@ const PrivacyPolicy = () => {
                     c. payment details are encrypted using SSL technology (typically you will
                     see a lock icon or green address bar (or both) in your browser when we use
                     this technology). Furthermore, all payments are gathered and processed by 
-                    Stripe, Inc., a third party payment portal. We are not responsible for any 
-                    of your financial details, as we never see them.
+                    Stripe, Inc., a third party payment portal. 
                 </p>
                 <p>
                     14. Technical and organisational measures include measures to deal with any
