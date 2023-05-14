@@ -21,6 +21,7 @@ from .views.cities import cities as cities
 website_domain = os.getenv('WEBSITE_DOMAIN') 
 
 import logging
+import colorlog
 logger = logging.getLogger(__name__)
 
 
@@ -84,7 +85,7 @@ def send_email_confirmation_celery(pk):
         email_confirm.delete()
 
 
-@shared_task()
+# @shared_task()
 def load_and_store_new_listings_celery(city_name):
 
     # AWS S3 storage
@@ -95,17 +96,20 @@ def load_and_store_new_listings_celery(city_name):
 
     # Load new listings
     try:
-        logger.info(city_name)
+        
         # with open(os.path.join('listings_json_data','json_data_' + city_name + '_debug.json')) as json_file:
         #     all_listings = json.load(json_file)
         # with gzip.open(os.path.join('listings_json_data','json_data_' + city_name + '.json'), 'r') as fin:
         #     all_listings = json.loads(fin.read().decode('utf-8'))
-        obj = s3_resource.Object(BUCKET, os.path.join('current_files','listings_json_data','json_data_' + city_name + '.json'))
-        with gzip.GzipFile(fileobj=obj.get()) as gzipfile:
-             all_listings = json.loads(gzipfile.read().decode('utf-8'))
+        # filename = os.path.join('past_files','listings_json_data','json_data_' + city_name + '.gz')
+        filename = 'past_files/listings_json_data/json_data_' + city_name + '.gz'
+        logger.info(f"Loading listings: {city_name} - {filename}")
+        obj = s3_resource.Object(BUCKET, filename)
+        with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
+            all_listings = json.loads(gzipfile.read())
     except Exception as e:
-        logger.error(city_name, 'failed')
-        logger.debug(e)
+        logger.error(f"Failed to update listings in {city_name}")
+        logger.error(e)
         return
 
     # Find all DB listings in the given city
@@ -178,7 +182,7 @@ def load_and_store_new_listings_celery(city_name):
             else:
                 logger.error(f"Listing {listing['Listing URL'].iloc[0]} exists already")
 
-@shared_task()
+# @shared_task()
 def update_listings_for_users_2_celery():
     """
     Fast version. Add all the new listings we have to their repsective users.
@@ -196,7 +200,7 @@ def update_listings_for_users_2_celery():
         logger.info(f"Finished {user.username}")
 
 
-@shared_task()
+# @shared_task()
 def update_listings_for_one_user_celery(user):
     """
     Fast version. Add all the new listing we have to a user.
@@ -213,12 +217,12 @@ def update_listings_for_one_user_celery(user):
 
     logger.info(f"Finished updating listings for {user.username}")
 
-@shared_task()
+# @shared_task()
 def update_listings_master_celery():
     for city in cities:
         if type(city) is tuple:
             city = city[0]
-        load_and_store_new_listings_celery.delay(city['name'])
+        load_and_store_new_listings_celery(city['name'])
 
     update_listings_for_users_2_celery()
 
@@ -242,3 +246,27 @@ def financial_logic(listing):
     
     # print(f"Rounded income {int(listing['mean_income'])} vs original {(listing['mean_income'])}")
     return bedrooms, breakeven_occupancy, profit, labels
+
+
+def create_listings_sample():
+    """
+    Creates a sample of listings from different cities.
+    """
+    query_set = Listing.objects.filter(profit__gte=1500).order_by('?')[:10]
+
+    # Maybe filter out London
+
+    sample_user_query = User.objects.filter(username="Listings_Sample")
+    if not sample_user_query.exists():
+        sample_user = User( username="Listings_Sample",
+                            email="notarealaddress@hotmail.com",
+                            )
+        sample_user.set_password('NotARealPassword')
+        sample_user.save()
+    else:
+        sample_user = sample_user_query[0]
+
+    for listing in query_set:
+        sample_user.profile.user_listings.add(listing)
+    sample_user.save()
+

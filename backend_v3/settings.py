@@ -51,7 +51,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'corsheaders.middleware.CorsMiddleware',    # add this
     "django.middleware.security.SecurityMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -158,35 +157,48 @@ STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 CORS_ORIGIN_WHITELIST = [
-    'https://localhost',
+    # 'https://localhost',
     'https://r2sa-v1-frontend.herokuapp.com',
     'https://r2sa-leads.co.uk',
     'https://www.r2sa-leads.co.uk',
     'https://r2sa-leads.com',
-    'https://www.r2sa-leads.com']
+    'https://www.r2sa-leads.com',
+    'https://r2sa-webscrape.herokuapp.com',
+    ]
 
 
-# REDIS related settings
-REDIS_HOST = 'localhost'
-REDIS_PORT = '6379'
-CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+# # REDIS related settings
+# REDIS_HOST = 'localhost'
+# REDIS_PORT = '6379'
+# CELERY_BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+# CELERY_ACCEPT_CONTENT = ['json']
+# CELERY_TASK_SERIALIZER = 'json'
+# CELERY_RESULT_SERIALIZER = 'json'
 
-# for Heroku
-CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
-CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
+# # for Heroku
+# CELERY_BROKER_URL = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
+# CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL', 'redis://' + REDIS_HOST + ':' + REDIS_PORT + '/0')
 
 import sys
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
+        'formatters': {
         'simple': {
-            'format': '{levelname} - line {lineno} - [{asctime}] module:{module} - {message}',
+            'format': '{levelname} - [{asctime}] module:{module} - line {lineno} - {message}',
             'style': '{',
         },
+        # 'colored': {
+		# 	'()': 'colorlog.ColoredFormatter',
+        #     'format': "%(log_color)s %(levelname)s -[%(asctime)s] module: %(module)s - line %(lineno)s - %(message)s",
+        #     'log_colors': {
+        #         'DEBUG':    'bold_black',
+        #         'INFO':     'white',
+        #         'WARNING':  'yellow',
+        #         'ERROR':    'red',
+        #         'CRITICAL': 'bold_red',
+        #     },
+		# },
     },
     'handlers': {
         'console': {
@@ -198,7 +210,7 @@ LOGGING = {
     'loggers': {  # I tried replacing this with 'root'
         '': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'INFO',
         },
     }
 }

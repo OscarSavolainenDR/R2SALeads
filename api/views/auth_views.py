@@ -134,7 +134,6 @@ class SignUp(APIView):
             given_password = serializer.data.get('password')
             given_email = serializer.data.get('email')
 
-
             if len(given_password) < 8:
                 logger.info('Given password too short')
                 return Response({'message': 'Your password must be atleast 8 characters long.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -143,7 +142,6 @@ class SignUp(APIView):
             if users_queryset.exists():
                 logger.info('User already exists')
                 return Response({'message': 'User already exists!'}, status=status.HTTP_400_BAD_REQUEST)
-
             
             email_queryset = User.objects.filter(email=given_email)
             if email_queryset.exists():
@@ -424,6 +422,7 @@ def authenticate_from_session_key(request):
             logger.info(f'User {user.username} authenticated from session key.')
             return user
         else:
+            logger.warn(f'User {user.username} not authenticated from session key.')
             return None
     
     return None

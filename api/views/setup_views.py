@@ -19,7 +19,7 @@ import zlib
 import gzip
 
 from .auth_views import authenticate_from_session_key
-from ..tasks import load_and_store_new_listings_celery, update_listings_for_users_2_celery, financial_logic, update_listings_master_celery
+from ..tasks import load_and_store_new_listings_celery, update_listings_for_users_2_celery, financial_logic, update_listings_master_celery, create_listings_sample
  
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
  
@@ -37,6 +37,7 @@ from .cities import cities as cities
 # logger.addHandler(stream_handler)
 
 import logging
+import colorlog
 logger = logging.getLogger(__name__)
 
 
@@ -127,7 +128,6 @@ class InitDB(APIView):
   
 
 class UpdateListings(APIView):
-    @csrf_exempt
     def post(self, request, format=None):
         """
         Expects one city to be updated, and for the city_name to be sent over API.
@@ -148,7 +148,6 @@ class UpdateListings(APIView):
         if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         
-
         # if not 'data' in body or not 'listings' in body['data']:
         #     return Response(status=status.HTTP_400_BAD_REQUEST)
         
@@ -162,9 +161,11 @@ class UpdateListings(APIView):
         # json_bytes = json.dumps(listings).encode('utf-8') # bytes
         # save_file = os.path.join("listings_json_data",f"json_data_{city_name}.json") 
 
-        load_and_store_new_listings_celery.delay(city_name)
+        load_and_store_new_listings_celery(city_name)
 
         update_listings_for_users_2_celery()
+
+        create_listings_sample()
 
         return Response(status=status.HTTP_200_OK)
 
@@ -172,7 +173,7 @@ class UpdateListings(APIView):
 class UpdateListingsWithInPlaceFiles(APIView):
     """
     Same as UpdateLisitngs, but we don't give it any new data.
-    We just update the listings with the current files. Mainly used for debugging.
+    We just update the listings with the past files. Mainly used for debugging.
     """
     def post(self, request, format=None):
 
@@ -192,28 +193,30 @@ class UpdateListingsWithInPlaceFiles(APIView):
 
         update_listings_master_celery()
 
+        create_listings_sample()
+
         return Response(status=status.HTTP_200_OK)
 
-class WipeListings(APIView):
-    """
-    We delete all listings from DB, used for debugging. NOTE: THIS SHOULD BE DELETED IN PRODUCTION, TOO DANGEROUS.
-    """
-    def post(self, request, format=None):
+# class WipeListings(APIView):
+#     """
+#     We delete all listings from DB, used for debugging. NOTE: THIS SHOULD BE DELETED IN PRODUCTION, TOO DANGEROUS.
+#     """
+#     def post(self, request, format=None):
 
-        # Checks authorisation here, only continues if the code is accepted.
-        auth = request.data
-        if not 'auth_key' in auth:
-            logger.error('No auth key given during WipeListings')  
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        else:
-            given_auth_key = auth['auth_key']
+#         # Checks authorisation here, only continues if the code is accepted.
+#         auth = request.data
+#         if not 'auth_key' in auth:
+#             logger.error('No auth key given during WipeListings')  
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
+#         else:
+#             given_auth_key = auth['auth_key']
     
-        # Incorrect auth key was given
-        if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+#         # Incorrect auth key was given
+#         if not given_auth_key == os.getenv('UPDATE_DB_AUTH_KEY'):
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
         
-        logger.info('Correct auth key given, running WipeListings')
+#         logger.info('Correct auth key given, running WipeListings')
 
-        Listing.objects.all().delete()
+#         Listing.objects.all().delete()
 
-        return Response(status=status.HTTP_200_OK)
+#         return Response(status=status.HTTP_200_OK)

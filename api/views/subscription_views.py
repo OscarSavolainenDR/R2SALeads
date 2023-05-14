@@ -39,9 +39,14 @@ class GetSubscriptionOptions(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
 
-        user = authenticate_from_session_key(request)
-        if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        user_authorised = False
+        if 'Authorization' in request.headers:
+            user = authenticate_from_session_key(request)
+            user_authorised = True
+            if user is None:
+                return Response(status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            user = User.objects.filter(username="Listings_Sample")[0]
 
         # NOTE: Add a serializer here, very important for query safety
         page_index = request.data['pageIndex']
@@ -66,7 +71,6 @@ class GetSubscriptionOptions(APIView):
                 else: 
                     cities = cities.order_by('-' + search_key)
             else: 
-                # import pdb; pdb.set_trace()
                 # we want to find all cities the user is subscribed to, and sort the cities by that order
                 subscribed = user.profile.cities.all()
                 all_not_subscribed = City.objects.exclude(pk__in=subscribed.values_list('pk', flat=True))
@@ -76,7 +80,6 @@ class GetSubscriptionOptions(APIView):
                     cities = subscribed.union(all_not_subscribed, all=True) 
                 else:
                     cities = all_not_subscribed.union(subscribed, all=True) 
-                    
 
         # Bunch into pages, maybe do myself.
         p = Paginator(cities, page_size)
@@ -91,6 +94,9 @@ class GetSubscriptionOptions(APIView):
                 subscribed = 1
             else:
                 subscribed = 2
+
+            if not user_authorised:
+                subscribed = 2 # unsubscribed
 
             city_info = {
                 'id': city.id,

@@ -11,6 +11,8 @@ from django.core.serializers.json import DjangoJSONEncoder
 import json
 import pandas as pd
 import os
+import boto3
+import gzip
 
 from .auth_views import authenticate_from_session_key
 
@@ -70,9 +72,13 @@ class DownloadExcel(APIView):
 
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
-        user = authenticate_from_session_key(request)
-        if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+
+        if 'Authorization' in request.headers:
+            user = authenticate_from_session_key(request)
+            if user is None:
+                return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        else:
+            user = User.objects.filter(username="Listings_Sample")[0]
         
         logger.info(f'Downloading excel {request.data["file_id"]} for user {user.username}')
 
@@ -95,47 +101,49 @@ class DownloadExcel(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         try:
-            import gzip
             # with gzip.open(os.path.join('listings_json_data','json_data_' + city + '.json'), 'r') as fin:
             #     all_listings = json.loads(fin.read().decode('utf-8'))
 
-            obj = s3_resource.Object(BUCKET, os.path.join('listings_json_data','json_data_' + city + '.json'))
-            with gzip.GzipFile(fileobj=obj.get()) as gzipfile:
-                all_listings = json.loads(gzipfile.read().decode('utf-8'))
-
-            # Get listing info from JSON array
-            listing = all_listings[listing_DB_and_JSON_index]
-
-            # Remove redundant columns for some rows
-            for index, airbnb in enumerate(listing[1:]):
-                airbnb.pop('Listing URL', None)
-                airbnb.pop('Listing Daily Rent', None)
-                airbnb.pop('Listing Bedrooms', None)
-                airbnb.pop('Listing Bathrooms', None)
-                airbnb.pop('Mean Monthly Income', None)
-                airbnb.pop('Median Monthly Income', None)
-                
-                listing[index+1] = airbnb
-            # listing[0]['Listing Monthly Rent'] = listing[0].pop('Listing Daily Rent')*30
-
-            # Move monthly rent to other column in excel (earlier position in dict)
-            pos = list(listing[0].keys()).index('Listing Bedrooms')
-            items = list(listing[0].items())
-            items.insert(pos, ('Listing Monthly Rent', listing[0].pop('Listing Daily Rent')*30))
-            listing[0] = dict(items)
-
-            # Move Distances to next to Daily Income, if not already done
-            pos = list(listing[0].keys()).index('Mean Monthly Income')
-            items = list(listing[0].items())
-            distance = listing[0].pop('Distance (km)')
-            items.insert(pos, ('Distance (km)', distance))
-            listing[0] = dict(items)
-
+            # filename = os.path.join('past_files','listings_json_data','json_data_' + city + '.gz')
+            filename = 'past_files/listings_json_data/json_data_' + city + '.gz'
+            logger.info(f"Loading listings for excel read: {city} - {filename}")
+            obj = s3_resource.Object(BUCKET, filename)
+            with gzip.GzipFile(fileobj=obj.get()["Body"]) as gzipfile:
+                all_listings = json.loads(gzipfile.read())
 
         except Exception as e: 
-            logger.error('Failed to read excel')
-            logger.debug(e)
+            logger.error(f'Failed to read excel, file {filename}')
+            logger.error(e)
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        # Get listing info from JSON array
+        listing = all_listings[listing_DB_and_JSON_index]
+
+        # Remove redundant columns for some rows
+        for index, airbnb in enumerate(listing[1:]):
+            airbnb.pop('Listing URL', None)
+            airbnb.pop('Listing Daily Rent', None)
+            airbnb.pop('Listing Bedrooms', None)
+            airbnb.pop('Listing Bathrooms', None)
+            airbnb.pop('Mean Monthly Income', None)
+            airbnb.pop('Median Monthly Income', None)
+            
+            listing[index+1] = airbnb
+        # listing[0]['Listing Monthly Rent'] = listing[0].pop('Listing Daily Rent')*30
+
+        # Move monthly rent to other column in excel (earlier position in dict)
+        pos = list(listing[0].keys()).index('Listing Bedrooms')
+        items = list(listing[0].items())
+        items.insert(pos, ('Listing Monthly Rent', listing[0].pop('Listing Daily Rent')*30))
+        listing[0] = dict(items)
+
+        # Move Distances to next to Daily Income, if not already done
+        pos = list(listing[0].keys()).index('Mean Monthly Income')
+        items = list(listing[0].items())
+        distance = listing[0].pop('Distance (km)')
+        items.insert(pos, ('Distance (km)', distance))
+        listing[0] = dict(items)
+
 
         logger.info(f'Successfully downloaded excel {request.data["file_id"]} for user {user.username}')
         return Response({'data': json.dumps(listing)}, status=status.HTTP_200_OK)
@@ -148,9 +156,12 @@ class GetTableLeads(APIView):
     # Define a get request: frontend asks for stuff
     def post(self, request, format=None):
 
-        user = authenticate_from_session_key(request)
-        if user is None:
-            return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        if 'Authorization' in request.headers:
+            user = authenticate_from_session_key(request)
+            if user is None:
+                return Response(status=status.HTTP_401_UNAUTHORIZED) 
+        else:
+            user = User.objects.filter(username="Listings_Sample")[0]
 
         table_data = request.data['tableData']
         filter_data = request.data['filterData']
@@ -166,8 +177,8 @@ class GetTableLeads(APIView):
 
         # import pdb; pdb.set_trace()
         listings = user.profile.user_listings.all()
-        total_listings_len = len(listings)
 
+        total_listings_len = len(listings)
         logger.info(f'User {user.username} has {total_listings_len} listings')
 
         if query:

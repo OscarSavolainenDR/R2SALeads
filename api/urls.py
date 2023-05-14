@@ -1,6 +1,6 @@
 # Stores all urls local to this app (api)
 from django.urls import path
-from .views.setup_views import InitDB, UpdateListings, UpdateListingsWithInPlaceFiles, WipeListings
+from .views.setup_views import InitDB, UpdateListings, UpdateListingsWithInPlaceFiles#, WipeListings
 from .views.project_views import UpdateScrumBoardBackend, DownloadExcel, GetTableLeads, UpdateLeadsListBackend
 from .views.auth_views import SignIn, SignOut, SignUp, ForgotPassword, ResendConfirmEmail, ResetPasswordView, ConfirmEmail_api, GetEmailStatus
 from .views.subscription_views import GetSubscriptionOptions, UnsubscribeFromCity, AddCitytoBasket
@@ -17,7 +17,7 @@ urlpatterns = [
     path('init-db', InitDB.as_view()),
     path('update-listings', UpdateListings.as_view()),
     path('update-listings-in-place', UpdateListingsWithInPlaceFiles.as_view()),
-    path('wipe-listings', WipeListings.as_view()),
+    # path('wipe-listings', WipeListings.as_view()),
 
     # Project URLs
     # path('project/scrum-board/boards', GetScrumBoard.as_view()),
