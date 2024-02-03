@@ -4,7 +4,8 @@ To build this, as a not-front-end-expert, I based it off the starter version of 
 
 ## Production
 
-In production, this was pushed to a Heroku dyno.
+In production, this was pushed to a Heroku dyno. It communicated with the backend via API calls, with the API address specified in `src/configs
+/app.config.js`, e.g. `apiPrefix: 'https://r2sa-v1.herokuapp.com/api/'`
 
 ## Documentation
 
