@@ -27,7 +27,7 @@ The backed is also integrated with Stripe. The payments are mostly handled by th
 ## Repo structure
 
 ### R2SA-frontend
-This contains the frontend of the website, built in React and Tailwind CSS. See the [README](https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md)https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md in the R2SA-frontend folder for more details. In production, it is simpler if this is made into a stand-alone git repo.
+This contains the frontend of the website, built in React and Tailwind CSS. See the [README](https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md) in the R2SA-frontend folder for more details. In production, it is simpler if this is made into a stand-alone git repo.
 
 ### R2SA-backend
 The backend. Similarly to the front-end, in production it is simpler if this is made into a stand-alone git repo.
