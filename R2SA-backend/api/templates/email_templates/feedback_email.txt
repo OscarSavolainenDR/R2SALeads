@@ -1,0 +1,12 @@
+{% autoescape off %}
+Hello,
+
+User {{ user }} with email {{user_email}} wanted to give this feedback:
+
+{{ content }}
+
+
+Sincerely,
+Rent 2 SA Leads
+
+{% endautoescape %}

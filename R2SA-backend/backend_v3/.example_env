@@ -1,0 +1,32 @@
+SECRET_KEY='XXX' # Of your Django App
+
+# PostgreSQL Database for local development
+DB_NAME=XXX
+DB_USER=XXX
+DB_PASSWORD=XXX
+DB_HOST=localhost
+DB_PORT=5432
+
+# Mailtrap key for sending automated emails, e.g. forgotten password
+MAILTRAP_KEY='XXX'
+
+WEBSITE_DOMAIN='www.r2sa-leads.co.uk'
+REDIS_HOST='XXX'
+
+# Secret key shared between the backend and webscraper that allows the webscraper to update the backend database
+UPDATE_DB_AUTH_KEY='XXXX'
+
+# Stripe details, e.g. webhook that updates the database when a person subscribes, allows one to check the pricing of subscriptions, etc.
+STRIPE_WEBHOOK_SECRET='XXX'
+STRIPE_SECRET_KEY='XXX'
+
+# Django admin login details
+ADMIN_PASSWORD='XXX'
+ADMIN_EMAIL='XXX'
+
+# AWS storage bucket detials, for webscraping, as Heroku does not have static storage.
+# The webscraper pushes the files to the AWS bucket, and the backend accesses them as appropriate.
+AWS_ACCESS_KEY_ID='XXX'
+AWS_SECRET_ACCESS_KEY='XXX'
+AWS_STORAGE_BUCKET_NAME='r2sa-webscraper-files'
+AWS_URL='XXX'
