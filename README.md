@@ -1,13 +1,15 @@
-# Elstar React Admin Template (Starter)
+# React and tailwind CSS front end for my R2SA website
 
-This is starter version of Elstar React Admin Template, it included minimum core components and functionality setup of a template.
-
-We <strong>strongly recommend</strong> to use this version to build the app on top.
+To build this, as a not-front-end-expert, I based it off the starter version of Elstar React Admin Template.
 
 ## Documentation
 
+I would recommend referencing the Elstar documentation, including on how to isntall all of the `npm` modules, to avoid any mistranslation.
+
 Visit [here](https://elstar.themenate.net/docs/documentation/introduction) for the documentation.
 
+## Support (for Elstar)
 
-## Support
+From Elstar's README:
+
 Please feel free to contact us via [our profile page](https://themeforest.net/user/theme_nate) if you encounter any issues, we will provide our best assist.
