@@ -88,3 +88,4 @@ db.sqlite3
 # Mine
 To_dos.txt
 .gitignore
+.env
