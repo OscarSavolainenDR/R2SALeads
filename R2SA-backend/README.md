@@ -10,6 +10,9 @@ It uses Mailtrap to automate emails to users, e.g. forgotten passwords.
 ## PostgreSQL database
 For local development, it uses a PostgreSQL database. Therefore you will need some local PostgreSQL database: I used `pgAdmin 4`: https://www.pgadmin.org/.
 
+## Celery for asynchronous message queues
+You don't want to clog your backed with expensive computation, as I found was an issue with this app in processing a lot of the rela estate data. To make it all work, I had to spin up Celery workers to handle the computationally heavy stuff and not freeze the backend. Celery is an open-source asynchronous task queue, and I can highly recommend it, it was easy to use and worked like a charm!
+
 ## We use Heroku dynos to host the backend in production
 In production, this backend was loaded onto a Heroku dyno, which has a built in database that automatically gets swapped in. The Heroku dyno also has a built-in REDIS broker.
 
