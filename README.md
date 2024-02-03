@@ -1,6 +1,10 @@
-# React and tailwind CSS front end for my R2SA website
+# React and Tailwind CSS front end for my R2SA website
 
 To build this, as a not-front-end-expert, I based it off the starter version of Elstar React Admin Template.
+
+## Production
+
+In production, this was pushed to a Heroku dyno.
 
 ## Documentation
 
