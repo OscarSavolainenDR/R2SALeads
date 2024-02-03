@@ -1,7 +1,7 @@
 # R2SA Leads Website
 A website I made for real-estate analysis. It webscrapes publicly availably to-rent listings and calculates their profitability as STLs based on surrounding comparables. It summarizes all of the results per listing that one can filter through, and provides a downloadable `.csv` file per listing with the full analysis per listing.
 
-I don't really work on this anymore, but if anyone wants to grab it and use ot as the basis for anything, go ahead!
+I don't really work on this anymore, but if anyone wants to grab it and use it as the basis for anything, go ahead!
 
 ## Features:
 ### Frontend
