@@ -1,0 +1,1 @@
+export const PUBLIC_STRIPE_KEY = process.env.REACT_APP_STRIPE_KEY

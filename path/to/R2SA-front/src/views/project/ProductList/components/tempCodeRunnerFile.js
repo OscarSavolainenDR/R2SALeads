@@ -1,0 +1,1 @@
+const data = useSelector((state) => state.projectTableView.data.productList)
