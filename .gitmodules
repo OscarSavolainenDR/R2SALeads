@@ -1,6 +1,0 @@
-[submodule "R2SA_backend"]
-	path = R2SA_backend
-	url = git@github.com:OscarSavolainenDR/R2SA_backend.git
-[submodule "R2SA_frontend"]
-	path = R2SA_frontend
-	url = git@github.com:OscarSavolainenDR/R2SA_frontend.git
