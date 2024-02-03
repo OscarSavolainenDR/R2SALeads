@@ -18,7 +18,7 @@ It uses Mailtrap to automate emails to users, e.g. forgotten passwords.
 For local development, it uses a PostgreSQL database. Therefore you will need some local PostgreSQL database: I used `pgAdmin 4`: https://www.pgadmin.org/.
 
 #### We use Heroku dynos to host the backend in production
-In production, as for the front-end, this backend was loaded onto a Heroku dyno as a separate git repo. Heroku has a built-in database that automatically gets swapped in. The Heroku dyno also has a built-in REDIS broker.
+For production, I found Heroku to be a really neat and easy solution, it's a PaaS aand makes deploying apps super easy. Heroku also has a built-in database that automatically gets swapped in for the local database, and it has a built-in REDIS broker.
 
 #### Integrated with Stripe payments via webhooks
 The backed is also integrated with Stripe. The payments are mostly handled by the front end, but the backend has a webhook from Stripe that signals to the backend if a new customer has been created, their payments have succeeded, etc., so the backend can update their authorizations.
