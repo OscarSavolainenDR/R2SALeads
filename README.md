@@ -1,7 +1,7 @@
 # R2SA Leads Website
 A website I made for real-estate analysis. It webscrapes publicly availably to-rent listings and calculates their profitability as STLs based on surrounding comparables. It summarizes all of the results per listing that one can filter through, and provides a downloadable `.csv` file per listing with the full analysis per listing.
 
-I don't really work on this anymore, but if anyone wants to grab it and use it as the basis for anything, go ahead!
+I don't really work on this actively anymore, but if anyone wants to grab it and use it as the basis for anything, go ahead!
 
 ## Frontend
 The front-end is built in React and Tailwind CSS, based off of the Elstar template. It is fully integrated with Stripe payment APIs to take payments (btw, Stripe has the best API documentation I have ever seen). 
@@ -34,4 +34,4 @@ The backed is also integrated with Stripe. The payments are mostly handled by th
 This contains the frontend of the website, built in React and Tailwind CSS. See the [README](https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md) in the R2SA-frontend folder for more details, and on how to get started. In production, it is simpler if this is made into a stand-alone git repo.
 
 ### R2SA-backend
-The backend, and similarly one should see its README to get started there! Similarly to the front-end, in production it is simpler if this is made into a stand-alone git repo. I have them both here in a single git repo for the sake of having the project in one place, and not having 3 different repositories for the same project (R2SALeads, the backend, and the frontend, with the later 2 was submodules). Technically the submodule approach is definitely the correct thing to do, but it is unlikely I will do anything with this project going forward, and will just use it to showcase the code.
+The backend, and similarly one should see its README to get started there! Similarly to the front-end, in production it is simpler if this is made into a stand-alone git repo. I have them both here in a single git repo for the sake of having the project in one place, and not having 3 different repositories for the same project (R2SALeads, the backend, and the frontend, with the later 2 was submodules). Technically the submodule approach is definitely the correct thing to do, but at os right now I am not planning to do anything active with this project going forward, and will just use it to showcase the code.
