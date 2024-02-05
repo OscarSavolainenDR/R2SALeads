@@ -4,7 +4,7 @@ A website I made for real-estate analysis. It webscrapes publicly availably to-r
 I don't really work on this anymore, but if anyone wants to grab it and use it as the basis for anything, go ahead!
 
 ## Frontend
-The front-end is built in React and Tailwind CSS, based off of the Elstar template, as I am not a front-end expert by any stretch. It is fully integrated with Stripe payment APIs to take payments (btw, Stripe has the best API documentation I have ever seen). 
+The front-end is built in React and Tailwind CSS, based off of the Elstar template. It is fully integrated with Stripe payment APIs to take payments (btw, Stripe has the best API documentation I have ever seen). 
 
 ## Backend
 This is a Django backend for my R2SA website. It services all of the front-end requests, and also interfaces with the Webscraper API to update the listings on a weekly basis.
