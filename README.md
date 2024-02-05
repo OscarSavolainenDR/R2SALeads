@@ -19,7 +19,7 @@ It uses Mailtrap to automate emails to users, e.g. forgotten passwords.
 For local development, it uses a PostgreSQL database. Therefore you will need some local PostgreSQL database: I used `pgAdmin 4`: https://www.pgadmin.org/.
 
 ### Celery for asynchronous message queues
-You don't want to clog your backed with expensive computation, as I found was an issue with this app in processing a lot of the rela estate data. To make it all work, I had to spin up Celery workers to handle the computationally heavy stuff and not freeze the backend. Celery is an open-source asynchronous task queue, and I can highly recommend it, it was easy to use and worked like a charm!
+You don't want to clog your backed with expensive computation, which I found was an issue with this app in processing and serving a lot of the real estate data. To make it all work, I had to spin up Celery workers to handle the computationally heavy stuff and not freeze the backend. Celery is an open-source asynchronous task queue, and I can highly recommend it, it was easy to use and worked like a charm!
 
 ### We use Heroku dynos to host the backend in production
 For production, I found Heroku to be a really neat and easy solution, it's a PaaS aand makes deploying apps super easy. Heroku also has a built-in database that automatically gets swapped in for the local database, and it has a built-in REDIS broker.
@@ -31,7 +31,7 @@ The backed is also integrated with Stripe. The payments are mostly handled by th
 ## Repo structure
 
 ### R2SA-frontend
-This contains the frontend of the website, built in React and Tailwind CSS. See the [README](https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md) in the R2SA-frontend folder for more details. In production, it is simpler if this is made into a stand-alone git repo.
+This contains the frontend of the website, built in React and Tailwind CSS. See the [README](https://github.com/OscarSavolainenDR/R2SA_website/blob/main/R2SA-frontend/README.md) in the R2SA-frontend folder for more details, and on how to get started. In production, it is simpler if this is made into a stand-alone git repo.
 
 ### R2SA-backend
-The backend. Similarly to the front-end, in production it is simpler if this is made into a stand-alone git repo.
+The backend, and similarly one should see its README to get started there! Similarly to the front-end, in production it is simpler if this is made into a stand-alone git repo. I have them both here in a single git repo for the sake of having the project in one place, and not having 3 different repositories for the same project (R2SALeads, the backend, and the frontend, with the later 2 was submodules). Technically the submodule approach is definitely the correct thing to do, but it is unlikely I will do anything with this project going forward, and will just use it to showcase the code.
